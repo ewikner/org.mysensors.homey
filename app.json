@@ -1,0 +1,73 @@
+{
+    "id": "org.mysensors.homey",
+    "version": "0.0.1",
+    "compatibility": "0.x || 1.x",
+    "name": {
+        "en": "Mysensors.org"
+    },
+    "description": {
+        "en": "Mysensors.org app to Homey"
+    },
+    "author": {
+        "name": "Erik Wikner",
+        "email": "erik.wikner@gmail.com"
+    },
+    "images": {
+        "large": "assets/images/large.jpg",
+        "small": "assets/images/small.jpg"
+    },
+    "drivers": [
+        {
+            "id": "mysensors",
+            "name": {
+                "en": "Mysensors Driver"
+            },
+            "images": {
+                "large": "./drivers/mysensors/assets/images/large.jpg",
+                "small": "./drivers/mysensors/assets/images/small.jpg"
+            },
+            "class": "sensor",
+            "capabilities": [ 
+                "measure_temperature", 
+                "measure_humidity" 
+            ],
+            "pair": [
+                {
+                    "id": "start"
+                },
+                {
+                    "id": "list_my_devices",
+                    "template": "list_devices",
+                    "navigation": {
+                        "next": "add_my_devices"
+                    }
+                },
+                {
+                    "id": "add_my_devices",
+                    "template": "add_devices"
+                }
+            ]
+        }
+    ],
+    "flow": {
+        "triggers": [
+            {
+                "id": "last_temperature",
+                "title": {
+                    "en": "New temperature value"
+                },
+                "tokens":[
+                  {
+                    "name":"temp",
+                    "title": {
+                      "en":"Temperature"
+                    },
+                    "example":{
+                      "en":"In degree celcius"
+                    }
+                  }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+    <head>
+
+    </head>
+    <body>
+
+        <h1></h1>
+        <p></p>
+
+        <fieldset>
+            <legend>Settings</legend>
+            <div class="field row">
+                <label for="gatewayType">Connection type</label>
+                <input id="gatewayType" type="text" value="mqtt" />
+            </div>
+            <div class="field row">
+                <label for="host">host</label>
+                <input id="host" type="text" value="" />
+            </div>
+            <div class="field row">
+                <label for="port">Port</label>
+                <input id="port" type="text" value="" />
+            </div>
+            <div class="field row">
+                <label for="subscribe_topic">subscribe_topic</label>
+                <input id="subscribe_topic" type="text" value="mygateway1-in" />
+            </div>
+            <div class="field row">
+                <label for="publish_topic">publish_topic</label>
+                <input id="publish_topic" type="text" value="mygateway1-out" />
+            </div>
+            <div class="field row">
+                <label for="timeout">timeout</label>
+                <input id="timeout" type="text" value="60000" />
+            </div>
+        </fieldset>
+
+        <button class="right" onclick="save()">Save changes</button>
+
+        <script type="text/javascript">
+        
+        function onHomeyReady(){
+          console.log('onHomeyReady: ');
+          Homey.ready()
+        }
+
+        function save() {
+          console.log('save: ');
+
+          Homey.set('gatewayType', document.getElementById('gatewayType').value)
+          Homey.set('host', document.getElementById('host').value)
+          Homey.set('port', document.getElementById('port').value)
+          Homey.set('publish_topic', document.getElementById('publish_topic').value)
+          Homey.set('subscribe_topic', document.getElementById('subscribe_topic').value)
+          Homey.set('timeout', document.getElementById('timeout').value)
+        }
+
+        </script>
+
+    </body>
+</html>

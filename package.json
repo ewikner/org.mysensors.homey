@@ -1,0 +1,24 @@
+{
+  "name": "homeymysensors",
+  "version": "0.0.1",
+  "description": "App for mysensors.org",
+  "main": "app.js",
+  "dependencies": {
+    "mqtt": "^1.7.4",
+    "net": "^1.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ewikner/org.mysensors.homey.git"
+  },
+  "author": "Erik Wikner",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ewikner/org.mysensors.homey/issues"
+  },
+  "homepage": "https://github.com/ewikner/org.mysensors.homey#readme"
+}
