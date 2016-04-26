@@ -43,6 +43,16 @@ exports.encodeMessage = function (messageObj,splitChar) {
     return encodedObj.join(splitChar);
 }
 
+exports.getCapabilities = function(type) {
+    var capabilities = null;
+    this.presentation.forEach(function(item, index) {
+        if(item.value == type) {
+            capabilities = item.capabilities
+            return capabilities;
+        }
+    });
+    return capabilities;
+}
 exports.types = [
     {'id': '0', 'value': 'presentation'},
     {'id': '1', 'value': 'set'},
@@ -52,46 +62,46 @@ exports.types = [
 ];
 
 exports.presentation = [
-    {'id': '0', 'value': 'S_DOOR', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '1', 'value': 'S_MOTION', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '2', 'value': 'S_SMOKE', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '3', 'value': 'S_LIGHT', 'capabilities': {'type': 'light', 'sub_type': 'onoff'}},
-    {'id': '4', 'value': 'S_DIMMER', 'capabilities': {'type': 'light', 'sub_type': 'dim'}},
-    {'id': '5', 'value': 'S_COVER', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '6', 'value': 'S_TEMP', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature'}},
-    {'id': '7', 'value': 'S_HUM', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity'}},
-    {'id': '8', 'value': 'S_BARO', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure'}},
-    {'id': '9', 'value': 'S_WIND', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '10', 'value': 'S_RAIN', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain'}},
-    {'id': '11', 'value': 'S_UV', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '12', 'value': 'S_WEIGHT', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '13', 'value': 'S_POWER', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power'}},
-    {'id': '14', 'value': 'S_HEATER', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '15', 'value': 'S_DISTANCE', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '16', 'value': 'S_LIGHT_LEVEL', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '17', 'value': 'S_ARDUINO_NODE', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '18', 'value': 'S_ARDUINO_RELAY', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '19', 'value': 'S_LOCK', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '20', 'value': 'S_IR', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '21', 'value': 'S_WATER', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '22', 'value': 'S_AIR_QUALITY', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '23', 'value': 'S_CUSTOM', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '24', 'value': 'S_DUST', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '25', 'value': 'S_SCENE_CONTROLLER', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '26', 'value': 'S_RGB_LIGHT', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '27', 'value': 'S_RGBW_LIGHT', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '28', 'value': 'S_COLOR_SENSOR', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '29', 'value': 'S_HVAC', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '30', 'value': 'S_MULTIMETER', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '31', 'value': 'S_SPRINKLER', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '32', 'value': 'S_WATER_LEAK', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '33', 'value': 'S_SOUND', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '34', 'value': 'S_VIBRATION', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '35', 'value': 'S_MOISTURE', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '36', 'value': 'S_INFO', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '37', 'value': 'S_GAS', 'capabilities': {'type': '', 'sub_type': ''}},
-    {'id': '38', 'value': 'S_BATTERY', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_battery'}},
-    {'id': '39', 'value': 'S_WATER_QUALITY', 'capabilities': {'type': '', 'sub_type': ''}}
+    {'id': '0', 'value': 'S_DOOR', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '1', 'value': 'S_MOTION', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '2', 'value': 'S_SMOKE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '3', 'value': 'S_LIGHT', 'capabilities': {'type': 'light', 'sub_type': 'onoff', 'parse_value': ''}},
+    {'id': '4', 'value': 'S_DIMMER', 'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': ''}},
+    {'id': '5', 'value': 'S_COVER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '6', 'value': 'S_TEMP', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '7', 'value': 'S_HUM', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'parseToFloat'}},
+    {'id': '8', 'value': 'S_BARO', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
+    {'id': '9', 'value': 'S_WIND', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '10', 'value': 'S_RAIN', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'parseToFloat'}},
+    {'id': '11', 'value': 'S_UV', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '12', 'value': 'S_WEIGHT', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '13', 'value': 'S_POWER', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
+    {'id': '14', 'value': 'S_HEATER', 'capabilities': {'type': '', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '15', 'value': 'S_DISTANCE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '16', 'value': 'S_LIGHT_LEVEL', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '17', 'value': 'S_ARDUINO_NODE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '18', 'value': 'S_ARDUINO_RELAY', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '19', 'value': 'S_LOCK', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '20', 'value': 'S_IR', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '21', 'value': 'S_WATER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '22', 'value': 'S_AIR_QUALITY', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '23', 'value': 'S_CUSTOM', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '24', 'value': 'S_DUST', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '25', 'value': 'S_SCENE_CONTROLLER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '26', 'value': 'S_RGB_LIGHT', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '27', 'value': 'S_RGBW_LIGHT', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '28', 'value': 'S_COLOR_SENSOR', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '29', 'value': 'S_HVAC', 'capabilities': {'type': '', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '30', 'value': 'S_MULTIMETER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '31', 'value': 'S_SPRINKLER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '32', 'value': 'S_WATER_LEAK', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '33', 'value': 'S_SOUND', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '34', 'value': 'S_VIBRATION', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '35', 'value': 'S_MOISTURE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '36', 'value': 'S_INFO', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '37', 'value': 'S_GAS', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '38', 'value': 'S_BATTERY', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_battery', 'parse_value': 'parseToFloat'}},
+    {'id': '39', 'value': 'S_WATER_QUALITY', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}}
 ];
 
 exports.req = [

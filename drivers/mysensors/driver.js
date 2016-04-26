@@ -3,7 +3,6 @@ var mqtt = require('mqtt');
 var net = require('net');
 
 var gwSplitChar = null;
-var devices = {};
 var nodes = [];
 var gwClient = null
 var settings = {};
@@ -17,52 +16,62 @@ var last_node_id = 0;
 module.exports.capabilities = {}
 
 module.exports.init = function (devices, callback) {
-    Homey.log('init');
+    debugLog('init');
+    debugLog(devices);
+    devices.forEach(function(device) {
+        // TODO
+    }) 
+    connectToGateway();
 
-    settings.gatewayType = Homey.manager('settings').get('gatewayType');
-    settings.host = Homey.manager('settings').get('host');
-    settings.port = Homey.manager('settings').get('port');
-    settings.publish_topic = Homey.manager('settings').get('publish_topic');
-    settings.subscribe_topic = Homey.manager('settings').get('subscribe_topic');
-    settings.timeout = Homey.manager('settings').get('timeout');
-
-    connectToGateway(settings, function(err) {
-        Homey.log(err);
-    })
     callback()
 }
 
 // Pairing functionality
 module.exports.pair = function (socket) {
-  socket.on('start', function( data, callback ){
-    Homey.log('pair start');
+    socket.on('list_devices', function( data, callback ) {
+        var devices = [];
 
-})
+        nodes.forEach(function(node){
+            node.sensors.forEach(function(sensor){
+                devices.push(sensor.device);
+            })
+        });
 
-socket.on('list_devices', function( data, callback ) {
-    Homey.log('pair list_devices');
+        debugLog(devices);
+        callback(null,devices);
+    })
 
-})
-
-socket.on('add_devices', function( device, callback ) {
-    Homey.log('pair add_device');
-})
+    socket.on('add_devices', function( device, callback ) {
+        debugLog('pair add_device');
+    })
 }
 
-module.exports.deleted = function (device_data) {
+module.exports.renamed = function( device_data, new_name ) {
     // TODO
+    debugLog('renamed');
+    debugLog(device_data);
+}
+
+module.exports.deleted = function( device_data ) {
+    // run when the user has deleted the device from Homey
+    debugLog('deleted');
+    var node = getNodeById(device_data.nodeId);
+    var sensor = getSensorInNode(node, device_data);
+    sensor.showSensor = false;
+
+    debugLog(sensor);    
 }
 
 // A user has updated settings, update the device object
 module.exports.settings = function (device_data, newSettingsObj, oldSettingsObj, changedKeysArr, callback) {
   // TODO
-  Homey.log('settings');
+  debugLog('settings');
   callback(null, true)
 }
 
 function handleMessage(message) {
-    Homey.log('----- handleMessage -------')
-    Homey.log(message)
+    debugLog('----- handleMessage -------')
+    debugLog(message)
     switch(message.messageType) {
         case 'presentation': handlePresentation(message); break;
         case 'set': handleSet(message); break;
@@ -73,30 +82,49 @@ function handleMessage(message) {
 }
 
 function handlePresentation(message) {
-    Homey.log('----- presentation -------')
+    debugLog('----- presentation -------')
     var node = getNodeById(message.nodeId);
-    var sensors = getSensorInNode(message);
-    Homey.log(node);
+    var sensors = getSensorInNode(node, message);
+    debugLog(node);
 }
 
 function handleSet(message) {
-    Homey.log('----- set -------')
+    debugLog('----- set -------')
     var node = getNodeById(message.nodeId);
-    var sensor = getSensorInNode(message);
+    var sensor = getSensorInNode(node, message);
 
     sensor.payload = message.payload;
     sensor.payloadType = message.subType;
     sensor.time = Date.now();
-    Homey.log(node);
+
+    debugLog(sensor);
+    if(sensor.capabilities) {
+        sensor.payload = parsePayload(sensor.capabilities.parse_value, message.payload);
+
+        debugLog('capability: ' + sensor.capabilities.sub_type + ' payload: '+sensor.payload)
+
+        module.exports.realtime(sensor.device, sensor.capabilities.sub_type, sensor.payload, function(err, success) {
+            if (err) { debugLog('! Realtime: ' + err); }
+        });
+    } else {
+        debugLog('sensor have no capabilities')
+    }
 }
 
 function handleReq(message) {
-    Homey.log('----- req -------')
+    debugLog('----- req -------')
+}
+
+function parsePayload(type, value) {
+    switch(type) {
+        case 'parseToFloat': return parseFloat(value); break;
+        default: return value;
+    }
 }
 
 function handleInternal(message) {
-    Homey.log('----- internal -------')
-    Homey.log('subType: '+message.subType)
+    debugLog('----- internal -------')
+    debugLog('subType: '+message.subType)
     switch(message.subType) {
         case 'I_BATTERY_LEVEL': 
             // BATTERY
@@ -160,27 +188,28 @@ function handleInternal(message) {
 }
 
 function handleStream(message) {
-    Homey.log('----- stream -------')
+    debugLog('----- stream -------')
 }
 
 function sendData(messageObj) {
-    Homey.log('-- SEND DATA ----');
+    // TODO
+    debugLog('-- SEND DATA ----');
     var dataStr = mysensorsProtocol.encodeMessage(messageObj, gwSplitChar);
-    Homey.log(dataStr);
+    debugLog(dataStr);
 
     if(settings.gatewayType == 'mqtt') {
-        Homey.log("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr);
+        debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr);
     } else if(settings.gatewayType == 'ethernet') {
-        Homey.log("SENDDATA to ethernet "+dataStr);
+        debugLog("SENDDATA to ethernet "+dataStr);
     }
 }
 
 function getNextID(message) {
-    Homey.log('-- getNextID ----');
+    debugLog('-- getNextID ----');
     if(last_node_id <= NODE_SENSOR_ID-1) {
         last_node_id++;
-
     }
+
     sendData({
         nodeId: message.nodeId,
         sensorId: message.sensorId,
@@ -192,7 +221,7 @@ function getNextID(message) {
 }
 
 function getNodeById(nodeId) {
-    Homey.log("--- getNodeById ----")
+    debugLog("--- getNodeById ----")
 
     var node = null;
     nodes.forEach(function(item) {
@@ -205,7 +234,7 @@ function getNodeById(nodeId) {
         if(last_node_id < nodeId) {
             last_node_id = nodeId;
         }
-        Homey.log("--- NEW NODE ----")
+        debugLog("--- NEW NODE ----")
         var node = {
             nodeId: nodeId,
             batteryLevel: '',
@@ -219,8 +248,9 @@ function getNodeById(nodeId) {
     return node;
 }
 
-function getSensorInNode(message) {
-    var node = getNodeById(message.nodeId);
+
+function getSensorInNode(node, message) {
+    debugLog("--- getSensorInNode ----")
     var sensor = null;
     node.sensors.forEach(function(item) {
         if(item.sensorId == message.sensorId) {
@@ -229,55 +259,89 @@ function getSensorInNode(message) {
     })
 
     if(sensor == null) {
-        Homey.log("--- NEW SENSOR ----")
+        debugLog("--- NEW SENSOR ----")
         var sensor = {
+            showSensor: true,
             sensorId: message.sensorId,
             sensorType: message.subType,
             payload: '',
             payloadType: '',
-            time: ''
+            time: '',
+            device: {}
         };
+        sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
+
+        var data_capabilities = [];
+        if(sensor.capabilities) {
+            data_capabilities.push(sensor.capabilities.sub_type);
+        }
+
+        sensor.device = {
+            data: {
+                id : node.nodeId + '_' + sensor.sensorId,
+                nodeId: node.nodeId,
+                sensorId: sensor.sensorId,
+                sensorType: sensor.sensorType
+            },
+            name: node.nodeId + ' ' + sensor.sensorType,
+            capabilities    : data_capabilities
+        };
+
         node.sensors.push(sensor);
+    } else {
+        if(message.messageType == 'presentation') {
+            if(sensor.sensorType != message.subType) {
+                sensor.sensorType = message.subType;
+            }
+        }
     }
+
     return sensor;
 }
 
-function connectToGateway(settings, callback) {
+function connectToGateway() {
+    settings.gatewayType = Homey.manager('settings').get('gatewayType');
+    settings.host = Homey.manager('settings').get('host');
+    settings.port = Homey.manager('settings').get('port');
+    settings.publish_topic = Homey.manager('settings').get('publish_topic');
+    settings.subscribe_topic = Homey.manager('settings').get('subscribe_topic');
+    settings.timeout = Homey.manager('settings').get('timeout');
+
     if(settings.gatewayType == 'mqtt') {
         gwSplitChar = '/';
-        Homey.log("----MQTT-----")
+        debugLog("----MQTT-----")
         topicPublish = settings.publish_topic;
         topicSubscribe = settings.subscribe_topic;
 
         gwClient = mqtt.connect('mqtt://'+settings.host+':'+settings.port);
  
         gwClient.on('connect', function () {
+            debugLog('IS connected');
           gwClient.subscribe(topicPublish + '/#');
           gwClient.subscribe(topicSubscribe + '/#');
-
-          callback('connected');
+          
         }).on('message', function (topic, data) {
             var dataTopic = topic.substr(topic.indexOf('/')+1);
             var mqttTopic = topic.substr(0,topic.indexOf('/'));
             switch(mqttTopic) {
                 case topicPublish:
-                    Homey.log('publish');
+                    debugLog('publish');
                     break;
                 case topicSubscribe:
-                    Homey.log('subscribe');
+                    debugLog('subscribe');
                     break;
             }
             
-            Homey.log(topic + ' : '+ data);
+            debugLog(topic + ' : '+ data);
             handleMessage(mysensorsProtocol.decodeMessage(dataTopic+'/'+data, gwSplitChar))
         }).on('close', function () {
-            Homey.log('Disconnected');
+            debugLog('Disconnected');
         }).on('error', function (error) {
-            Homey.log('MQTT error');
+            debugLog('MQTT error');
         });
 
     } else if(settings.gatewayType == 'ethernet') {
-        Homey.log("----Ethernet-----")
+        debugLog("----Ethernet-----")
         gwSplitChar = ';';
         client = net.Socket();
         gwClient.connect(settings.port, settings.host);
@@ -285,18 +349,17 @@ function connectToGateway(settings, callback) {
         gwClient.setEncoding('ascii');
         gwClient.setTimeout(settings.timeout);
         gwClient.on('connect', function() {
-            Homey.log('IS connected');
-            callback('connected');
+            debugLog('IS connected');
         }).on('data', function(data) {
             handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
         }).on('end', function() {
-            Homey.log('Disconnected');
+            debugLog('Disconnected');
 
         }).on('error', function() {
-            Homey.log('Ethernet error');
+            debugLog('Ethernet error');
         });
     } else {
-        Homey.log("----TEST-----")
+        debugLog("----TEST-----")
         gwSplitChar = ';';
         var testDataArr = [];
         testDataArr.push("0;0;3;0;9;Starting gateway (RNNGA-, 1.6.0-beta)");
@@ -312,4 +375,8 @@ function connectToGateway(settings, callback) {
             handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
         });
     }
+}
+
+function debugLog(str) {
+    Homey.log(str);
 }
