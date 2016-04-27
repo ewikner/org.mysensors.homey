@@ -343,7 +343,7 @@ function connectToGateway() {
     } else if(settings.gatewayType == 'ethernet') {
         debugLog("----Ethernet-----")
         gwSplitChar = ';';
-        client = net.Socket();
+        gwClient = net.Socket();
         gwClient.connect(settings.port, settings.host);
 
         gwClient.setEncoding('ascii');
