@@ -1,62 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
     <head>
-
-    </head>
-    <body>
-
-        <h1></h1>
-        <p></p>
-
-        <fieldset>
-            <legend>Settings</legend>
-            <div class="field row">
-                <label for="gatewayType">Connection type</label>
-                <input id="gatewayType" type="text" value="mqtt" />
-            </div>
-            <div class="field row">
-                <label for="host">host</label>
-                <input id="host" type="text" value="" />
-            </div>
-            <div class="field row">
-                <label for="port">Port</label>
-                <input id="port" type="text" value="" />
-            </div>
-            <div class="field row">
-                <label for="subscribe_topic">subscribe_topic</label>
-                <input id="subscribe_topic" type="text" value="mygateway1-in" />
-            </div>
-            <div class="field row">
-                <label for="publish_topic">publish_topic</label>
-                <input id="publish_topic" type="text" value="mygateway1-out" />
-            </div>
-            <div class="field row">
-                <label for="timeout">timeout</label>
-                <input id="timeout" type="text" value="60000" />
-            </div>
-        </fieldset>
-
-        <button class="right" onclick="save()">Save changes</button>
-
-        <script type="text/javascript">
+    <style>
+    
+        .oneline {
+            display: inline-flex;
+            align-items: center;
+        }
         
-        function onHomeyReady(){
-          console.log('onHomeyReady: ');
-          Homey.ready()
+        input[type="radio"]:not(:checked)+label{ font-weight: lighter; }
+    </style>
+    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="/manager/webserver/assets/js/angular.js"></script>
+    <script>
+    angular.module('mysApp', []).controller('settingsCtrl', ['$scope', '$timeout', function($scope, $timeout) {
+        $scope.saveSettings = function(form) {
+            if (form.$valid) {
+                Homey.set('mys_settings', $scope.settings, function(err, value) {
+                  if (!err) {
+                    $scope.message = "Settings is saved!";
+                  }
+                });
+            }
         }
 
-        function save() {
-          console.log('save: ');
-
-          Homey.set('gatewayType', document.getElementById('gatewayType').value)
-          Homey.set('host', document.getElementById('host').value)
-          Homey.set('port', document.getElementById('port').value)
-          Homey.set('publish_topic', document.getElementById('publish_topic').value)
-          Homey.set('subscribe_topic', document.getElementById('subscribe_topic').value)
-          Homey.set('timeout', document.getElementById('timeout').value)
+        $scope.getSettings = function() {
+          Homey.get('mys_settings', function(err, result) {
+            if (err) { 
+              return console.error('Could not get settings', err);
+            }
+            $scope.settings = result;
+            $scope.$apply();
+          });
         }
 
-        </script>
+        $scope.getSettings();
+    }]);
 
-    </body>
+    function onHomeyReady(){
+        angular.bootstrap(document, ['mysApp']);
+        Homey.ready();
+      }
+    </script> 
+  </head>
+<body>
+
+<div ng-controller="settingsCtrl">
+  <fieldset id="message" class="message">
+    <legend>Message</legend>
+    <div class="message-bar">
+      {{message}}
+    </div>
+  </fieldset>
+  <fieldset>
+      <legend>Settings</legend>
+      <form name="mysSettings">
+        <div class="oneline">
+            <label for="gatewayType">Connection type</label>
+            <input type="radio" id="gw-none" ng-model="settings.gatewayType" value="">
+            <label for="gw-none">None</label>
+            <input type="radio" id="gw-mqtt" ng-model="settings.gatewayType" value="mqtt">
+            <label for="gw-mqtt">MQTT</label>
+            <input type="radio" id="gw-ethernet" ng-model="settings.gatewayType" value="ethernet">
+            <label for="gw-ethernet">Ethernet</label>
+        </div>
+        <div class="field row">
+              <label for="host">Host</label>
+              <input id="host" ng-model="settings.host" placeholder="0.0.0.0" required />
+          </div>
+          <div class="field row">
+              <label for="port">Port</label>
+              <input id="port" ng-model="settings.port" placeholder="1883" required />
+          </div>
+        <div ng-switch="settings.gatewayType">
+          <div ng-switch-when="mqtt">
+             <div class="field row">
+                <label for="subscribe_topic">Subscribe topic</label>
+                <input id="subscribe_topic" ng-model="settings.subscribe_topic" placeholder="mygateway1-in" />
+            </div>
+            <div class="field row">
+                <label for="publish_topic">Publish topic</label>
+                <input id="publish_topic" ng-model="settings.publish_topic" placeholder="mygateway1-out" />
+            </div>
+          </div>
+          <div ng-switch-when="ethernet">
+             <div class="field row">
+                <label for="timeout">Timeout</label>
+                <input id="timeout" ng-model="settings.timeout" placeholder="60000" ng-pattern="/^\d+$/"/>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-default" ng-click="saveSettings(mysSettings)" >Save</button>
+      </form>
+  </fieldset>
+</div>
+
+</body>
 </html>

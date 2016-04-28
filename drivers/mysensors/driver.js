@@ -15,6 +15,10 @@ var last_node_id = 0;
 // Export capabilities
 module.exports.capabilities = {}
 
+Homey.manager('settings').on('set', function(varName) {
+    connectToGateway();
+})
+
 module.exports.init = function (devices, callback) {
     debugLog('init');
     debugLog(devices);
@@ -33,7 +37,11 @@ module.exports.pair = function (socket) {
 
         nodes.forEach(function(node){
             node.sensors.forEach(function(sensor){
-                devices.push(sensor.device);
+                if(sensor.device) {
+                    if(sensor.device.capabilities.length > 0) {
+                        devices.push(sensor.device);
+                    }
+                }
             })
         });
 
@@ -300,80 +308,76 @@ function getSensorInNode(node, message) {
 }
 
 function connectToGateway() {
-    settings.gatewayType = Homey.manager('settings').get('gatewayType');
-    settings.host = Homey.manager('settings').get('host');
-    settings.port = Homey.manager('settings').get('port');
-    settings.publish_topic = Homey.manager('settings').get('publish_topic');
-    settings.subscribe_topic = Homey.manager('settings').get('subscribe_topic');
-    settings.timeout = Homey.manager('settings').get('timeout');
+    settings = Homey.manager('settings').get('mys_settings');
+    debugLog(settings)
+    if(settings) {
+        if((settings.gatewayType == 'mqtt') && 
+            (settings.host != '') && 
+            (settings.port != '') && 
+            (settings.publish_topic != '') && 
+            (settings.subscribe_topic != '')) {
 
-    if(settings.gatewayType == 'mqtt') {
-        gwSplitChar = '/';
-        debugLog("----MQTT-----")
-        topicPublish = settings.publish_topic;
-        topicSubscribe = settings.subscribe_topic;
+            debugLog("----MQTT-----")
 
-        gwClient = mqtt.connect('mqtt://'+settings.host+':'+settings.port);
- 
-        gwClient.on('connect', function () {
-            debugLog('IS connected');
-          gwClient.subscribe(topicPublish + '/#');
-          gwClient.subscribe(topicSubscribe + '/#');
-          
-        }).on('message', function (topic, data) {
-            var dataTopic = topic.substr(topic.indexOf('/')+1);
-            var mqttTopic = topic.substr(0,topic.indexOf('/'));
-            switch(mqttTopic) {
-                case topicPublish:
-                    debugLog('publish');
-                    break;
-                case topicSubscribe:
-                    debugLog('subscribe');
-                    break;
-            }
-            
-            debugLog(topic + ' : '+ data);
-            handleMessage(mysensorsProtocol.decodeMessage(dataTopic+'/'+data, gwSplitChar))
-        }).on('close', function () {
-            debugLog('Disconnected');
-        }).on('error', function (error) {
-            debugLog('MQTT error');
-        });
+            gwSplitChar = '/';
+            topicPublish = settings.publish_topic;
+            topicSubscribe = settings.subscribe_topic;
 
-    } else if(settings.gatewayType == 'ethernet') {
-        debugLog("----Ethernet-----")
-        gwSplitChar = ';';
-        gwClient = net.Socket();
-        gwClient.connect(settings.port, settings.host);
+            gwClient = mqtt.connect('mqtt://'+settings.host+':'+settings.port);
+     
+            gwClient.on('connect', function () {
+                debugLog('MQTT connected');
+                gwClient.subscribe(topicPublish + '/#');
+                gwClient.subscribe(topicSubscribe + '/#');
+              
+            }).on('message', function (topic, data) {
+                var dataTopic = topic.substr(topic.indexOf('/')+1);
+                var mqttTopic = topic.substr(0,topic.indexOf('/'));
+                switch(mqttTopic) {
+                    case topicPublish:
+                        debugLog('publish');
+                        break;
+                    case topicSubscribe:
+                        debugLog('subscribe');
+                        break;
+                }
+                
+                debugLog(topic + ' : '+ data);
+                handleMessage(mysensorsProtocol.decodeMessage(dataTopic+'/'+data, gwSplitChar))
+            }).on('reconnect', function () {
+                debugLog('MQTT reconnect');
+            }).on('close', function () {
+                debugLog('MQTT disconnected');
+            }).on('error', function (error) {
+                debugLog('MQTT error');
+                debugLog(error);
+            });
 
-        gwClient.setEncoding('ascii');
-        gwClient.setTimeout(settings.timeout);
-        gwClient.on('connect', function() {
-            debugLog('IS connected');
-        }).on('data', function(data) {
-            handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
-        }).on('end', function() {
-            debugLog('Disconnected');
+        } else if((settings.gatewayType == 'ethernet') && 
+                (settings.host != '') && 
+                (settings.port != '') && 
+                (settings.timeout != '')) {
 
-        }).on('error', function() {
-            debugLog('Ethernet error');
-        });
-    } else {
-        debugLog("----TEST-----")
-        gwSplitChar = ';';
-        var testDataArr = [];
-        testDataArr.push("0;0;3;0;9;Starting gateway (RNNGA-, 1.6.0-beta)");
-        testDataArr.push("6;0;0;0;7;");
-        testDataArr.push("6;1;0;0;6;");
-        testDataArr.push("6;2;0;0;1;");
-        testDataArr.push("6;199;0;0;38;");
-        testDataArr.push("6;1;1;0;0;20.6");
-        testDataArr.push("6;199;1;0;38;6.13");
-        testDataArr.push("6;199;1;0;38;1.1");
+            debugLog("----Ethernet-----")
+            gwSplitChar = ';';
+            gwClient = net.Socket();
+            gwClient.connect(settings.port, settings.host);
 
-        testDataArr.forEach(function(data) {
-            handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
-        });
+            gwClient.setEncoding('ascii');
+            gwClient.setTimeout(parseInt(settings.timeout));
+            gwClient.on('connect', function() {
+                debugLog('Ethernet connected');
+            }).on('data', function(data) {
+                handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
+            }).on('end', function() {
+                debugLog('Ethernet disconnected');
+
+            }).on('error', function() {
+                debugLog('Ethernet error');
+            });
+        } else {
+            debugLog("----TEST-----")
+        }
     }
 }
 
