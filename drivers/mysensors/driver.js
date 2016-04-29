@@ -37,10 +37,23 @@ module.exports.pair = function (socket) {
 
         nodes.forEach(function(node){
             node.sensors.forEach(function(sensor){
-                if(sensor.device) {
-                    if(sensor.device.capabilities.length > 0) {
-                        devices.push(sensor.device);
+                if(sensor.capabilities) {
+                    var data_capabilities = [];
+                    if(sensor.capabilities) {
+                        data_capabilities.push(sensor.capabilities.sub_type);
                     }
+
+                    sensor.device = {
+                        data: {
+                            id : node.nodeId + '_' + sensor.sensorId,
+                            nodeId: node.nodeId,
+                            sensorId: sensor.sensorId,
+                            sensorType: sensor.sensorType
+                        },
+                        name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
+                        capabilities    : data_capabilities
+                    };
+                    devices.push(sensor.device);
                 }
             })
         });
@@ -49,8 +62,10 @@ module.exports.pair = function (socket) {
         callback(null,devices);
     })
 
-    socket.on('add_devices', function( device, callback ) {
+    socket.on('add_device', function( device, callback ) {
         debugLog('pair add_device');
+        debugLog(device);
+        callback();
     })
 }
 
@@ -63,11 +78,7 @@ module.exports.renamed = function( device_data, new_name ) {
 module.exports.deleted = function( device_data ) {
     // run when the user has deleted the device from Homey
     debugLog('deleted');
-    var node = getNodeById(device_data.nodeId);
-    var sensor = getSensorInNode(node, device_data);
-    sensor.showSensor = false;
-
-    debugLog(sensor);    
+    debugLog(device_data);
 }
 
 // A user has updated settings, update the device object
@@ -80,12 +91,14 @@ module.exports.settings = function (device_data, newSettingsObj, oldSettingsObj,
 function handleMessage(message) {
     debugLog('----- handleMessage -------')
     debugLog(message)
-    switch(message.messageType) {
-        case 'presentation': handlePresentation(message); break;
-        case 'set': handleSet(message); break;
-        case 'req': handleReq(message); break;
-        case 'internal': handleInternal(message); break;
-        case 'stream': handleStream(message); break;
+    if(message) {
+        switch(message.messageType) {
+            case 'presentation': handlePresentation(message); break;
+            case 'set': handleSet(message); break;
+            case 'req': handleReq(message); break;
+            case 'internal': handleInternal(message); break;
+            case 'stream': handleStream(message); break;
+        }
     }
 }
 
@@ -112,9 +125,11 @@ function handleSet(message) {
 
             debugLog('capability: ' + sensor.capabilities.sub_type + ' payload: '+sensor.payload)
 
-            module.exports.realtime(sensor.device, sensor.capabilities.sub_type, sensor.payload, function(err, success) {
-                if (err) { debugLog('! Realtime: ' + err); }
-            });
+            if(sensor.device) {
+                module.exports.realtime(sensor.device, sensor.capabilities.sub_type, sensor.payload, function(err, success) {
+                    if (err) { debugLog('! Realtime: ' + err); }
+                });
+            }
         } else {
             debugLog('sensor have no capabilities')
         }
@@ -273,25 +288,9 @@ function getSensorInNode(node, message) {
             payload: '',
             payloadType: '',
             time: '',
-            device: {}
+            device: null
         };
         sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
-
-        var data_capabilities = [];
-        if(sensor.capabilities) {
-            data_capabilities.push(sensor.capabilities.sub_type);
-        }
-
-        sensor.device = {
-            data: {
-                id : node.nodeId + '_' + sensor.sensorId,
-                nodeId: node.nodeId,
-                sensorId: sensor.sensorId,
-                sensorType: sensor.sensorType
-            },
-            name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
-            capabilities    : data_capabilities
-        };
 
         node.sensors.push(sensor);
     } else {
