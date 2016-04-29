@@ -101,33 +101,28 @@ function handleSet(message) {
     var node = getNodeById(message.nodeId);
     var sensor = getSensorInNode(node, message);
 
-    sensor.payload = message.payload;
-    sensor.payloadType = message.subType;
-    sensor.time = Date.now();
+    if(sensor != null) {
+        sensor.payload = message.payload;
+        sensor.payloadType = message.subType;
+        sensor.time = Date.now();
 
-    debugLog(sensor);
-    if(sensor.capabilities) {
-        sensor.payload = parsePayload(sensor.capabilities.parse_value, message.payload);
+        debugLog(sensor);
+        if(sensor.capabilities) {
+            sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
 
-        debugLog('capability: ' + sensor.capabilities.sub_type + ' payload: '+sensor.payload)
+            debugLog('capability: ' + sensor.capabilities.sub_type + ' payload: '+sensor.payload)
 
-        module.exports.realtime(sensor.device, sensor.capabilities.sub_type, sensor.payload, function(err, success) {
-            if (err) { debugLog('! Realtime: ' + err); }
-        });
-    } else {
-        debugLog('sensor have no capabilities')
+            module.exports.realtime(sensor.device, sensor.capabilities.sub_type, sensor.payload, function(err, success) {
+                if (err) { debugLog('! Realtime: ' + err); }
+            });
+        } else {
+            debugLog('sensor have no capabilities')
+        }
     }
 }
 
 function handleReq(message) {
     debugLog('----- req -------')
-}
-
-function parsePayload(type, value) {
-    switch(type) {
-        case 'parseToFloat': return parseFloat(value); break;
-        default: return value;
-    }
 }
 
 function handleInternal(message) {
@@ -207,8 +202,10 @@ function sendData(messageObj) {
 
     if(settings.gatewayType == 'mqtt') {
         debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr);
+        //gwClient.publish('presence', 'Hello mqtt');
     } else if(settings.gatewayType == 'ethernet') {
         debugLog("SENDDATA to ethernet "+dataStr);
+        gwClient.write(dataStr + "\n");
     }
 }
 
@@ -267,6 +264,7 @@ function getSensorInNode(node, message) {
     })
 
     if(sensor == null) {
+        
         debugLog("--- NEW SENSOR ----")
         var sensor = {
             showSensor: true,
@@ -291,7 +289,7 @@ function getSensorInNode(node, message) {
                 sensorId: sensor.sensorId,
                 sensorType: sensor.sensorType
             },
-            name: node.nodeId + ' ' + sensor.sensorType,
+            name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
             capabilities    : data_capabilities
         };
 

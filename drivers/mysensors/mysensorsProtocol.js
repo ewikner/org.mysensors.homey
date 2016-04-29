@@ -7,16 +7,23 @@ exports.decodeMessage = function (messageStr,splitChar) {
     var messageArr = messageStr.split(splitChar);
     if (!messageArr || messageArr.length !== 6) {
         Homey.log("decode err")
+        Homey.log(messageStr)
         return null;
+    }
+
+    var messageType = this.types[messageArr[2]].value;
+    var subType = messageType;
+    if((messageType == 'get') || (messageType == 'set')) {
+        subType = 'req_set';
     }
 
     var messageObj = {
         nodeId: messageArr[0],
         sensorId: messageArr[1],
-        messageType: this.types[messageArr[2]].value,
+        messageType: messageType,
         ack: messageArr[3],
-        subType: this[this.types[messageArr[2]].value][messageArr[4]].value,
-        payload: messageArr[5]
+        subType: this[subType][messageArr[4]].value,
+        payload: messageArr[5].replace('\n','')
     };
 
     return messageObj;
@@ -33,8 +40,12 @@ exports.encodeMessage = function (messageObj,splitChar) {
         }
     });
     encodedObj.push(messageObj.ack);
-
-    this[messageObj.messageType].forEach(function(item, index) {
+    
+    var subType = messageObj.messageType;
+    if((messageObj.messageType == 'get') || (messageObj.messageType == 'set')) {
+        subType = 'req_set';
+    }
+    this[subType].forEach(function(item, index) {
         if(item.value == messageObj.subType) {
             encodedObj.push(item.id);
         }
@@ -43,16 +54,41 @@ exports.encodeMessage = function (messageObj,splitChar) {
     return encodedObj.join(splitChar);
 }
 
-exports.getCapabilities = function(type) {
+exports.getCapabilities = function(inputStr) {
+    var firstChar = inputStr.charAt(0);
     var capabilities = null;
-    this.presentation.forEach(function(item, index) {
-        if(item.value == type) {
-            capabilities = item.capabilities
-            return capabilities;
+
+    if(firstChar == 'S') {
+        this.presentation.forEach(function(item, index) {
+            if(item.value == inputStr) {
+                if(item.variables.length > 0) {
+                    inputStr = item.variables[0];
+                } else {
+                    inputStr = null;
+                }
+            }
+            
+        });
+    }
+
+    this.req_set.forEach(function(item, index) {
+        if(item.value == inputStr) {
+            if(item.capabilities.sub_type != '') {
+                capabilities = item.capabilities;
+            }
         }
     });
+    
     return capabilities;
 }
+
+exports.parsePayload = function(type_type, value) {
+    switch(type_type) {
+        case 'parseToFloat': return parseFloat(value); break;
+        default: return value;
+    }
+}
+
 exports.types = [
     {'id': '0', 'value': 'presentation'},
     {'id': '1', 'value': 'set'},
@@ -62,160 +98,103 @@ exports.types = [
 ];
 
 exports.presentation = [
-    {'id': '0', 'value': 'S_DOOR', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '1', 'value': 'S_MOTION', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '2', 'value': 'S_SMOKE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '3', 'value': 'S_LIGHT', 'capabilities': {'type': 'light', 'sub_type': 'onoff', 'parse_value': ''}},
-    {'id': '4', 'value': 'S_DIMMER', 'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': ''}},
-    {'id': '5', 'value': 'S_COVER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '6', 'value': 'S_TEMP', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
-    {'id': '7', 'value': 'S_HUM', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'parseToFloat'}},
-    {'id': '8', 'value': 'S_BARO', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
-    {'id': '9', 'value': 'S_WIND', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '10', 'value': 'S_RAIN', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'parseToFloat'}},
-    {'id': '11', 'value': 'S_UV', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '12', 'value': 'S_WEIGHT', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '13', 'value': 'S_POWER', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
-    {'id': '14', 'value': 'S_HEATER', 'capabilities': {'type': '', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
-    {'id': '15', 'value': 'S_DISTANCE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '16', 'value': 'S_LIGHT_LEVEL', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '17', 'value': 'S_ARDUINO_NODE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '18', 'value': 'S_ARDUINO_RELAY', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '19', 'value': 'S_LOCK', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '20', 'value': 'S_IR', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '21', 'value': 'S_WATER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '22', 'value': 'S_AIR_QUALITY', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '23', 'value': 'S_CUSTOM', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '24', 'value': 'S_DUST', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '25', 'value': 'S_SCENE_CONTROLLER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '26', 'value': 'S_RGB_LIGHT', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '27', 'value': 'S_RGBW_LIGHT', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '28', 'value': 'S_COLOR_SENSOR', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '29', 'value': 'S_HVAC', 'capabilities': {'type': '', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
-    {'id': '30', 'value': 'S_MULTIMETER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '31', 'value': 'S_SPRINKLER', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '32', 'value': 'S_WATER_LEAK', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '33', 'value': 'S_SOUND', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '34', 'value': 'S_VIBRATION', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '35', 'value': 'S_MOISTURE', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '36', 'value': 'S_INFO', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '37', 'value': 'S_GAS', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '38', 'value': 'S_BATTERY', 'capabilities': {'type': 'sensor', 'sub_type': 'measure_battery', 'parse_value': 'parseToFloat'}},
-    {'id': '39', 'value': 'S_WATER_QUALITY', 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}}
+    {'id': '0', 'value': 'S_DOOR',                  'variables': ['V_TRIPPED', 'V_ARMED']},
+    {'id': '1', 'value': 'S_MOTION',                'variables': ['V_TRIPPED', 'V_ARMED']},
+    {'id': '2', 'value': 'S_SMOKE',                 'variables': ['V_TRIPPED', 'V_ARMED']},
+    {'id': '3', 'value': 'S_LIGHT',                 'variables': ['V_STATUS', 'V_WATT']},
+    {'id': '4', 'value': 'S_DIMMER',                'variables': ['V_STATUS', 'V_DIMMER', 'V_WATT']},
+    {'id': '5', 'value': 'S_COVER',                 'variables': ['V_UP', 'V_DOWN', 'V_STOP', 'V_PERCENTAGE']},
+    {'id': '6', 'value': 'S_TEMP',                  'variables': ['V_TEMP', 'V_ID']},
+    {'id': '7', 'value': 'S_HUM',                   'variables': ['V_HUM']},
+    {'id': '8', 'value': 'S_BARO',                  'variables': ['V_PRESSURE', 'V_FORECAST']},
+    {'id': '9', 'value': 'S_WIND',                  'variables': ['V_WIND', 'V_GUST']},
+    {'id': '10', 'value': 'S_RAIN',                 'variables': ['V_RAIN', 'V_RAINRAT']},
+    {'id': '11', 'value': 'S_UV',                   'variables': ['V_UV']},
+    {'id': '12', 'value': 'S_WEIGHT',               'variables': ['V_WEIGHT', 'V_IMPEDANCE']},
+    {'id': '13', 'value': 'S_POWER',                'variables': ['V_WATT', 'V_KWH']},
+    {'id': '14', 'value': 'S_HEATER',               'variables': ['V_HVAC_SETPOINT_HEAT', 'V_HVAC_FLOW_STATE', 'V_TEMP']},
+    {'id': '15', 'value': 'S_DISTANCE',             'variables': ['V_DISTANCE', 'V_UNIT_PREFIX']},
+    {'id': '16', 'value': 'S_LIGHT_LEVEL',          'variables': ['V_LIGHT_LEVEL', 'V_LEVEL']},
+    {'id': '17', 'value': 'S_ARDUINO_NODE',         'variables': []},
+    {'id': '18', 'value': 'S_ARDUINO_RELAY',        'variables': []},
+    {'id': '19', 'value': 'S_LOCK',                 'variables': ['V_LOCK_STATUS']},
+    {'id': '20', 'value': 'S_IR',                   'variables': ['V_IR_SEND', 'V_IR_RECEIVE']},
+    {'id': '21', 'value': 'S_WATER',                'variables': ['V_FLOW', 'V_VOLUME']},
+    {'id': '22', 'value': 'S_AIR_QUALITY',          'variables': ['V_LEVEL', 'V_UNIT_PREFIX']},
+    {'id': '23', 'value': 'S_CUSTOM',               'variables': []},
+    {'id': '24', 'value': 'S_DUST',                 'variables': ['V_LEVEL', 'V_UNIT_PREFIX']},
+    {'id': '25', 'value': 'S_SCENE_CONTROLLER',     'variables': ['V_SCENE_ON', 'V_SCENE_OFF']},
+    {'id': '26', 'value': 'S_RGB_LIGHT',            'variables': ['V_RGB', 'V_WATT']},
+    {'id': '27', 'value': 'S_RGBW_LIGHT',           'variables': ['V_RGBW', 'V_WATT']},
+    {'id': '28', 'value': 'S_COLOR_SENSOR',         'variables': ['V_RGB']},
+    {'id': '29', 'value': 'S_HVAC',                 'variables': ['V_HVAC_SETPOINT_HEAT', 'V_HVAC_SETPOINT_COLD', 'V_HVAC_FLOW_STATE', 'V_HVAC_FLOW_MODE', 'V_HVAC_SPEED']},
+    {'id': '30', 'value': 'S_MULTIMETER',           'variables': ['V_VOLTAGE', 'V_CURRENT', 'V_IMPEDANCE']},
+    {'id': '31', 'value': 'S_SPRINKLER',            'variables': ['V_STATUS', 'V_TRIPPED']},
+    {'id': '32', 'value': 'S_WATER_LEAK',           'variables': ['V_TRIPPED', 'V_ARMED']},
+    {'id': '33', 'value': 'S_SOUND',                'variables': ['V_LEVEL', 'V_TRIPPED', 'V_ARMED']},
+    {'id': '34', 'value': 'S_VIBRATION',            'variables': ['V_LEVEL', 'V_TRIPPED', 'V_ARMED']},
+    {'id': '35', 'value': 'S_MOISTURE',             'variables': ['V_LEVEL', 'V_TRIPPED', 'V_ARMED']},
+    {'id': '36', 'value': 'S_INFO',                 'variables': []},
+    {'id': '37', 'value': 'S_GAS',                  'variables': []},
+    {'id': '38', 'value': 'S_BATTERY',              'variables': []},
+    {'id': '39', 'value': 'S_WATER_QUALITY',        'variables': []}
 ];
 
-exports.req = [
-    {'id': '0', 'value': 'V_TEMP'},
-    {'id': '1', 'value': 'V_HUM'},
-    {'id': '2', 'value': 'V_STATUS'},
-    {'id': '3', 'value': 'V_PERCENTAGE'},
-    {'id': '4', 'value': 'V_PRESSURE'},
-    {'id': '5', 'value': 'V_FORECAST'},
-    {'id': '6', 'value': 'V_RAIN'},
-    {'id': '7', 'value': 'V_RAINRATE'},
-    {'id': '8', 'value': 'V_WIND'},
-    {'id': '9', 'value': 'V_GUST'},
-    {'id': '10', 'value': 'V_DIRECTION'},
-    {'id': '11', 'value': 'V_UV'},
-    {'id': '12', 'value': 'V_WEIGHT'},
-    {'id': '13', 'value': 'V_DISTANCE'},
-    {'id': '14', 'value': 'V_IMPEDANCE'},
-    {'id': '15', 'value': 'V_ARMED'},
-    {'id': '16', 'value': 'V_TRIPPED'},
-    {'id': '17', 'value': 'V_WATT'},
-    {'id': '18', 'value': 'V_KWH'},
-    {'id': '19', 'value': 'V_SCENE_ON'},
-    {'id': '20', 'value': 'V_SCENE_OFF'},
-    {'id': '21', 'value': 'V_HVAC_FLOW_STATE'},
-    {'id': '22', 'value': 'V_HVAC_SPEED'},
-    {'id': '23', 'value': 'V_LIGHT_LEVEL'},
-    {'id': '24', 'value': 'V_VAR1'},
-    {'id': '25', 'value': 'V_VAR2'},
-    {'id': '26', 'value': 'V_VAR3'},
-    {'id': '27', 'value': 'V_VAR4'},
-    {'id': '28', 'value': 'V_VAR5'},
-    {'id': '29', 'value': 'V_UP'},
-    {'id': '30', 'value': 'V_DOWN'},
-    {'id': '31', 'value': 'V_STOP'},
-    {'id': '32', 'value': 'V_IR_SEND'},
-    {'id': '33', 'value': 'V_IR_RECEIVE'},
-    {'id': '34', 'value': 'V_FLOW'},
-    {'id': '35', 'value': 'V_VOLUME'},
-    {'id': '36', 'value': 'V_LOCK_STATUS'},
-    {'id': '37', 'value': 'V_LEVEL'},
-    {'id': '38', 'value': 'V_VOLTAGE'},
-    {'id': '39', 'value': 'V_CURRENT'},
-    {'id': '40', 'value': 'V_RGB'},
-    {'id': '41', 'value': 'V_RGBW'},
-    {'id': '42', 'value': 'V_ID'},
-    {'id': '43', 'value': 'V_UNIT_PREFIX'},
-    {'id': '44', 'value': 'V_HVAC_SETPOINT_COOL'},
-    {'id': '45', 'value': 'V_HVAC_SETPOINT_HEAT'},
-    {'id': '46', 'value': 'V_HVAC_FLOW_MODE'},
-    {'id': '47', 'value': 'V_TEXT'},
-    {'id': '48', 'value': 'V_CUSTOM'},
-    {'id': '49', 'value': 'V_POSITION'},
-    {'id': '50', 'value': 'V_IR_RECORD'},
-    {'id': '51', 'value': 'V_PH'},
-    {'id': '52', 'value': 'V_ORP'},
-    {'id': '53', 'value': 'V_EC'}
-];
-
-exports.set = [
-    {'id': '0', 'value': 'V_TEMP'},
-    {'id': '1', 'value': 'V_HUM'},
-    {'id': '2', 'value': 'V_STATUS'},
-    {'id': '3', 'value': 'V_PERCENTAGE'},
-    {'id': '4', 'value': 'V_PRESSURE'},
-    {'id': '5', 'value': 'V_FORECAST'},
-    {'id': '6', 'value': 'V_RAIN'},
-    {'id': '7', 'value': 'V_RAINRATE'},
-    {'id': '8', 'value': 'V_WIND'},
-    {'id': '9', 'value': 'V_GUST'},
-    {'id': '10', 'value': 'V_DIRECTION'},
-    {'id': '11', 'value': 'V_UV'},
-    {'id': '12', 'value': 'V_WEIGHT'},
-    {'id': '13', 'value': 'V_DISTANCE'},
-    {'id': '14', 'value': 'V_IMPEDANCE'},
-    {'id': '15', 'value': 'V_ARMED'},
-    {'id': '16', 'value': 'V_TRIPPED'},
-    {'id': '17', 'value': 'V_WATT'},
-    {'id': '18', 'value': 'V_KWH'},
-    {'id': '19', 'value': 'V_SCENE_ON'},
-    {'id': '20', 'value': 'V_SCENE_OFF'},
-    {'id': '21', 'value': 'V_HVAC_FLOW_STATE'},
-    {'id': '22', 'value': 'V_HVAC_SPEED'},
-    {'id': '23', 'value': 'V_LIGHT_LEVEL'},
-    {'id': '24', 'value': 'V_VAR1'},
-    {'id': '25', 'value': 'V_VAR2'},
-    {'id': '26', 'value': 'V_VAR3'},
-    {'id': '27', 'value': 'V_VAR4'},
-    {'id': '28', 'value': 'V_VAR5'},
-    {'id': '29', 'value': 'V_UP'},
-    {'id': '30', 'value': 'V_DOWN'},
-    {'id': '31', 'value': 'V_STOP'},
-    {'id': '32', 'value': 'V_IR_SEND'},
-    {'id': '33', 'value': 'V_IR_RECEIVE'},
-    {'id': '34', 'value': 'V_FLOW'},
-    {'id': '35', 'value': 'V_VOLUME'},
-    {'id': '36', 'value': 'V_LOCK_STATUS'},
-    {'id': '37', 'value': 'V_LEVEL'},
-    {'id': '38', 'value': 'V_VOLTAGE'},
-    {'id': '39', 'value': 'V_CURRENT'},
-    {'id': '40', 'value': 'V_RGB'},
-    {'id': '41', 'value': 'V_RGBW'},
-    {'id': '42', 'value': 'V_ID'},
-    {'id': '43', 'value': 'V_UNIT_PREFIX'},
-    {'id': '44', 'value': 'V_HVAC_SETPOINT_COOL'},
-    {'id': '45', 'value': 'V_HVAC_SETPOINT_HEAT'},
-    {'id': '46', 'value': 'V_HVAC_FLOW_MODE'},
-    {'id': '47', 'value': 'V_TEXT'},
-    {'id': '48', 'value': 'V_CUSTOM'},
-    {'id': '49', 'value': 'V_POSITION'},
-    {'id': '50', 'value': 'V_IR_RECORD'},
-    {'id': '51', 'value': 'V_PH'},
-    {'id': '52', 'value': 'V_ORP'},
-    {'id': '53', 'value': 'V_EC'}
+exports.req_set = [
+    {'id': '0', 'value': 'V_TEMP',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '1', 'value': 'V_HUM',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'parseToFloat'}},
+    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'light', 'sub_type': 'onoff', 'parse_value': ''}},
+    {'id': '3', 'value': 'V_PERCENTAGE',            'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': ''}},
+    {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
+    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
+    {'id': '6', 'value': 'V_RAIN',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'parseToFloat'}},
+    {'id': '7', 'value': 'V_RAINRATE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'parseToFloat'}},
+    {'id': '8', 'value': 'V_WIND',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '9', 'value': 'V_GUST',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '10', 'value': 'V_DIRECTION',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '11', 'value': 'V_UV',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '12', 'value': 'V_WEIGHT',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '13', 'value': 'V_DISTANCE',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '14', 'value': 'V_IMPEDANCE',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '15', 'value': 'V_ARMED',                'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': ''}},
+    {'id': '16', 'value': 'V_TRIPPED',              'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': ''}},
+    {'id': '17', 'value': 'V_WATT',                 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
+    {'id': '18', 'value': 'V_KWH',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
+    {'id': '19', 'value': 'V_SCENE_ON',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '20', 'value': 'V_SCENE_OFF',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '21', 'value': 'V_HVAC_FLOW_STATE',      'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '22', 'value': 'V_HVAC_SPEED',           'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '23', 'value': 'V_LIGHT_LEVEL',          'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'parseToFloat'}},
+    {'id': '24', 'value': 'V_VAR1',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '25', 'value': 'V_VAR2',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '26', 'value': 'V_VAR3',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '27', 'value': 'V_VAR4',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '28', 'value': 'V_VAR5',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '29', 'value': 'V_UP',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '30', 'value': 'V_DOWN',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '31', 'value': 'V_STOP',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '32', 'value': 'V_IR_SEND',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '33', 'value': 'V_IR_RECEIVE',           'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '34', 'value': 'V_FLOW',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '35', 'value': 'V_VOLUME',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '36', 'value': 'V_LOCK_STATUS',          'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '37', 'value': 'V_LEVEL',                'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '38', 'value': 'V_VOLTAGE',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '39', 'value': 'V_CURRENT',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '40', 'value': 'V_RGB',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '41', 'value': 'V_RGBW',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '42', 'value': 'V_ID',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '43', 'value': 'V_UNIT_PREFIX',          'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '44', 'value': 'V_HVAC_SETPOINT_COOL',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '45', 'value': 'V_HVAC_SETPOINT_HEAT',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '46', 'value': 'V_HVAC_FLOW_MODE',       'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '47', 'value': 'V_TEXT',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '48', 'value': 'V_CUSTOM',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '49', 'value': 'V_POSITION',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '50', 'value': 'V_IR_RECORD',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '51', 'value': 'V_PH',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '52', 'value': 'V_ORP',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '53', 'value': 'V_EC',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}}
 ];
 
 exports.internal = [
