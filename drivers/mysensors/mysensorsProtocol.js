@@ -40,7 +40,7 @@ exports.encodeMessage = function (messageObj,splitChar) {
         }
     });
     encodedObj.push(messageObj.ack);
-    
+
     var subType = messageObj.messageType;
     if((messageObj.messageType == 'get') || (messageObj.messageType == 'set')) {
         subType = 'req_set';
@@ -55,30 +55,31 @@ exports.encodeMessage = function (messageObj,splitChar) {
 }
 
 exports.getCapabilities = function(inputStr) {
-    var firstChar = inputStr.charAt(0);
     var capabilities = null;
+    if(inputStr) {
+        var firstChar = inputStr.charAt(0);
 
-    if(firstChar == 'S') {
-        this.presentation.forEach(function(item, index) {
+        if(firstChar == 'S') {
+            this.presentation.forEach(function(item, index) {
+                if(item.value == inputStr) {
+                    if(item.variables.length > 0) {
+                        inputStr = item.variables[0];
+                    } else {
+                        inputStr = null;
+                    }
+                }
+                
+            });
+        }
+
+        this.req_set.forEach(function(item, index) {
             if(item.value == inputStr) {
-                if(item.variables.length > 0) {
-                    inputStr = item.variables[0];
-                } else {
-                    inputStr = null;
+                if(item.capabilities.sub_type != '') {
+                    capabilities = item.capabilities;
                 }
             }
-            
         });
     }
-
-    this.req_set.forEach(function(item, index) {
-        if(item.value == inputStr) {
-            if(item.capabilities.sub_type != '') {
-                capabilities = item.capabilities;
-            }
-        }
-    });
-    
     return capabilities;
 }
 
