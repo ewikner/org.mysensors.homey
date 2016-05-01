@@ -1,4 +1,27 @@
 {
+	"settings": {
+		"h1": "Settings for MySensors Gateway",
+		"p": "Add data to connect to your Gateway",
+		"script": {
+			"success": "Saved success"
+		},
+		"messagebar": {
+			"legend": "Message"
+		},
+		"form": {
+			"legend": "Settings",
+			"gatewayType": "Connection type",
+			"gatewayType_none": "None",
+			"gatewayType_mqtt": "MQTT",
+			"gatewayType_ethernet": "Ethernet",
+			"host": "Host",
+			"port": "Port",
+			"subscribe_topic": "Subscribe topic",
+			"publish_topic": "Publish topic",
+			"timeout": "Timeout",
+			"submit": "Save settings"
+		}
+	},
 	"pair": {
 		"start": {
 			"title": "Start connect to your Gateway"

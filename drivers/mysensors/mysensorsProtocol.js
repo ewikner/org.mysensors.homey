@@ -86,6 +86,13 @@ exports.getCapabilities = function(inputStr) {
 exports.parsePayload = function(type_type, value) {
     switch(type_type) {
         case 'parseToFloat': return parseFloat(value); break;
+        case 'parseToBoolean': 
+            if(value == 0) {
+                return false;
+            } else {
+                return true;
+            }
+            break;
         default: return value;
     }
 }
@@ -144,7 +151,7 @@ exports.presentation = [
 exports.req_set = [
     {'id': '0', 'value': 'V_TEMP',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
     {'id': '1', 'value': 'V_HUM',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'parseToFloat'}},
-    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'light', 'sub_type': 'onoff', 'parse_value': ''}},
+    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'light', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
     {'id': '3', 'value': 'V_PERCENTAGE',            'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': ''}},
     {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
     {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
@@ -153,12 +160,12 @@ exports.req_set = [
     {'id': '8', 'value': 'V_WIND',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '9', 'value': 'V_GUST',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '10', 'value': 'V_DIRECTION',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '11', 'value': 'V_UV',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '11', 'value': 'V_UV',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_ultraviolet', 'parse_value': 'parseToFloat'}},
     {'id': '12', 'value': 'V_WEIGHT',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '13', 'value': 'V_DISTANCE',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '14', 'value': 'V_IMPEDANCE',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '15', 'value': 'V_ARMED',                'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': ''}},
-    {'id': '16', 'value': 'V_TRIPPED',              'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': ''}},
+    {'id': '15', 'value': 'V_ARMED',                'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
+    {'id': '16', 'value': 'V_TRIPPED',              'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
     {'id': '17', 'value': 'V_WATT',                 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
     {'id': '18', 'value': 'V_KWH',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
     {'id': '19', 'value': 'V_SCENE_ON',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
@@ -179,7 +186,7 @@ exports.req_set = [
     {'id': '34', 'value': 'V_FLOW',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '35', 'value': 'V_VOLUME',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '36', 'value': 'V_LOCK_STATUS',          'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '37', 'value': 'V_LEVEL',                'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '37', 'value': 'V_LEVEL',                'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'parseToFloat'}},
     {'id': '38', 'value': 'V_VOLTAGE',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '39', 'value': 'V_CURRENT',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '40', 'value': 'V_RGB',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
