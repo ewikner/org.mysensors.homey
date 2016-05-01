@@ -20,10 +20,13 @@ Homey.manager('settings').on('set', function(varName) {
 })
 
 module.exports.init = function (devices, callback) {
+    generateCapabilitiesFunctions();
     debugLog('init');
     debugLog(devices);
+
     devices.forEach(function(device) {
-        // TODO
+        var node = getNodeById(device.nodeId);
+        var sensor = getSensorInNode(node, device, true);
     }) 
     connectToGateway();
 
@@ -38,21 +41,7 @@ module.exports.pair = function (socket) {
         nodes.forEach(function(node){
             node.sensors.forEach(function(sensor){
                 if(sensor.capabilities) {
-                    var data_capabilities = [];
-                    if(sensor.capabilities) {
-                        data_capabilities.push(sensor.capabilities.sub_type);
-                    }
-
-                    sensor.device = {
-                        data: {
-                            id : node.nodeId + '_' + sensor.sensorId,
-                            nodeId: node.nodeId,
-                            sensorId: sensor.sensorId,
-                            sensorType: sensor.sensorType
-                        },
-                        name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
-                        capabilities    : data_capabilities
-                    };
+                    addDeviceToSensor(node, sensor);
                     devices.push(sensor.device);
                 }
             })
@@ -86,6 +75,30 @@ module.exports.settings = function (device_data, newSettingsObj, oldSettingsObj,
   // TODO
   debugLog('settings');
   callback(null, true)
+}
+
+function generateCapabilitiesFunctions() {
+    var localCapabilities = {}
+    
+    var specialFunctions = {
+            get: function( device_data, callback ){
+                var node = getNodeById(device_data.nodeId,false);
+                var sensor = getSensorInNode(node, device_data);
+                if( typeof callback == 'function' ) {
+                    callback( null, sensor.payload );
+                }
+            }
+    };
+
+    mysensorsProtocol.req_set.forEach(function(item, index) {
+        if(item.capabilities.sub_type != '') {
+            if(localCapabilities[item.capabilities.sub_type] == null) {
+                localCapabilities[item.capabilities.sub_type] = specialFunctions;
+            }
+        }
+    });
+
+    module.exports.capabilities = localCapabilities;
 }
 
 function handleMessage(message) {
@@ -123,11 +136,20 @@ function handleSet(message) {
         if(sensor.capabilities) {
             sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
 
-            debugLog('capability: ' + sensor.capabilities.sub_type + ' payload: '+sensor.payload)
+            
 
             if(sensor.device) {
-                module.exports.realtime(sensor.device, sensor.capabilities.sub_type, sensor.payload, function(err, success) {
-                    if (err) { debugLog('! Realtime: ' + err); }
+                var capa = sensor.capabilities.sub_type;
+                if(sensor.capabilities.type == 'mysensors') {
+                    capa = sensor.capabilities.sub_type.id;
+                }
+
+                debugLog('capability: ' + capa + ' payload: '+sensor.payload)
+                module.exports.realtime(sensor.device, capa, sensor.payload, function(err, success) {
+                    if (err) {
+                        debugLog('! Realtime: ' + err); 
+                    }
+                    debugLog('Realtime: ' + success); 
                 });
             }
         } else {
@@ -240,9 +262,8 @@ function getNextID(message) {
     });
 }
 
-function getNodeById(nodeId) {
+function getNodeById(nodeId, createNew) {
     debugLog("--- getNodeById ----")
-
     var node = null;
     nodes.forEach(function(item) {
         if(item.nodeId == nodeId) {
@@ -250,26 +271,45 @@ function getNodeById(nodeId) {
         }
     })
 
-    if(node == null) {
-        if(last_node_id < nodeId) {
-            last_node_id = nodeId;
+    if(createNew !== false) {
+        if(node == null) {
+            if(last_node_id < nodeId) {
+                last_node_id = nodeId;
+            }
+            debugLog("--- NEW NODE ----")
+            var node = {
+                nodeId: nodeId,
+                batteryLevel: '',
+                sketchName: '',
+                sketchVersion: '',
+                sensors: []
+            };
+            nodes.push(node);
         }
-        debugLog("--- NEW NODE ----")
-        var node = {
-            nodeId: nodeId,
-            batteryLevel: '',
-            sketchName: '',
-            sketchVersion: '',
-            sensors: []
-        };
-        nodes.push(node);
     }
     
     return node;
 }
 
+function addDeviceToSensor(node, sensor) {
+    var data_capabilities = [];
+    if(sensor.capabilities) {
+        data_capabilities.push(sensor.capabilities.sub_type);
+    }
 
-function getSensorInNode(node, message) {
+    sensor.device = {
+        data: {
+            id : node.nodeId + '_' + sensor.sensorId,
+            nodeId: node.nodeId,
+            sensorId: sensor.sensorId,
+            sensorType: sensor.sensorType
+        },
+        name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
+        capabilities    : data_capabilities
+    };
+}
+
+function getSensorInNode(node, message, isDevice) {
     debugLog("--- getSensorInNode ----")
     var sensor = null;
     node.sensors.forEach(function(item) {
@@ -279,18 +319,25 @@ function getSensorInNode(node, message) {
     })
 
     if(sensor == null) {
-        
         debugLog("--- NEW SENSOR ----")
+        var subType = message.subType;
+        if(subType === undefined) {
+            subType = message.sensorType;
+        }
         var sensor = {
-            showSensor: true,
             sensorId: message.sensorId,
-            sensorType: message.subType,
+            sensorType: subType,
             payload: '',
             payloadType: '',
             time: '',
             device: null
         };
+
         sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
+
+        if(isDevice === true) {
+            addDeviceToSensor(node, sensor);
+        }
 
         node.sensors.push(sensor);
     } else {
