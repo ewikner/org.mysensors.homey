@@ -145,7 +145,7 @@ function handleSet(message) {
                 }
 
                 debugLog('capability: ' + capa + ' payload: '+sensor.payload)
-                module.exports.realtime(sensor.device, capa, sensor.payload, function(err, success) {
+                module.exports.realtime(sensor.device.data, capa, sensor.payload, function(err, success) {
                     if (err) {
                         debugLog('! Realtime: ' + err); 
                     }
