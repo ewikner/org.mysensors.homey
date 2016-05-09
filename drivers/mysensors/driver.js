@@ -4,7 +4,9 @@ var net = require('net');
 
 var gwSplitChar = null;
 var nodes = [];
-var gwClient = null
+var gwClient = null;
+var gwIsConnected = false;
+var connectionTimer = null;
 var settings = {};
 
 const FIRMWARE_BLOCK_SIZE = 16;
@@ -16,19 +18,51 @@ var last_node_id = 0;
 module.exports.capabilities = {}
 
 Homey.manager('settings').on('set', function(varName) {
+    if(gwClient != null) {
+        gwClient.end();
+    }
     connectToGateway();
 })
 
+function startConnectionTimer() {
+    if(connectionTimer !== null) {
+        clearInterval(connectionTimer);
+    }
+    
+    connectionTimer = setInterval(connectToGateway, 60000);
+}
 module.exports.init = function (devices, callback) {
     generateCapabilitiesFunctions();
     debugLog('init');
     debugLog(devices);
 
-    devices.forEach(function(device) {
-        var node = getNodeById(device.nodeId);
-        var sensor = getSensorInNode(node, device, true);
+    devices.forEach(function(device_data) {
+        var node = getNodeById(device_data.nodeId);
+        var sensor = getSensorInNode(node, device_data, true);
     }) 
-    connectToGateway();
+    //connectToGateway();
+    startConnectionTimer();
+
+    Homey.manager('flow').on('trigger.value_changed', function( callback, args, state ){
+        debugLog('FLOW = trigger.value_changed')
+        debugLog(args)
+        debugLog(state)
+
+        callback( null, true );
+    });
+
+
+    Homey.manager('flow').on('action.set_value', function( callback, args ){
+        debugLog('FLOW = action.set_value')
+        debugLog(args)
+        var node = getNodeById(args.device.nodeId, false);
+        var sensor = getSensorInNode(node, args.device, true);
+        args.device.payload = args.value;
+        args.device.subType = sensor.payloadType;
+
+        handleSet(args.device, true);
+        callback( null, true );
+    });
 
     callback()
 }
@@ -82,8 +116,26 @@ function generateCapabilitiesFunctions() {
     
     var specialFunctions = {
             get: function( device_data, callback ){
-                var node = getNodeById(device_data.nodeId,false);
-                var sensor = getSensorInNode(node, device_data);
+                debugLog("---SPECIAL GET")
+                debugLog(device_data);
+                debugLog("SPECIAL GET---")
+                var node = getNodeById(device_data.nodeId, false);
+                var sensor = getSensorInNode(node, device_data, true);
+                if( typeof callback == 'function' ) {
+                    callback( null, sensor.payload );
+                }
+            },
+            set: function( device_data, value, callback ) {
+                debugLog("---SPECIAL SET")
+                debugLog(device_data);
+                debugLog(value)
+                debugLog("SPECIAL SET---")
+                var node = getNodeById(device_data.nodeId, false);
+                var sensor = getSensorInNode(node, device_data, true);
+                device_data.payload = value;
+                device_data.subType = sensor.payloadType;
+
+                handleSet(device_data, true);
                 if( typeof callback == 'function' ) {
                     callback( null, sensor.payload );
                 }
@@ -122,10 +174,13 @@ function handlePresentation(message) {
     debugLog(node);
 }
 
-function handleSet(message) {
+function handleSet(message, isDeviceData) {
+    if (typeof isDeviceData === 'undefined') {
+        isDeviceData = false;
+    }
     debugLog('----- set -------')
     var node = getNodeById(message.nodeId);
-    var sensor = getSensorInNode(node, message);
+    var sensor = getSensorInNode(node, message, isDeviceData);
 
     if(sensor != null) {
         sensor.payload = message.payload;
@@ -135,8 +190,6 @@ function handleSet(message) {
         debugLog(sensor);
         if(sensor.capabilities) {
             sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
-
-            
 
             if(sensor.device) {
                 var capa = sensor.capabilities.sub_type;
@@ -150,6 +203,11 @@ function handleSet(message) {
                         debugLog('! Realtime: ' + err); 
                     }
                     debugLog('Realtime: ' + success); 
+                });
+                
+                Homey.manager('flow').triggerDevice('value_changed', null, null, sensor.device.data, function(err, result){                
+                    console.log('value_changed ', result);
+                    if( err ) return Homey.error( err);
                 });
             }
         } else {
@@ -263,6 +321,9 @@ function getNextID(message) {
 }
 
 function getNodeById(nodeId, createNew) {
+    if (typeof createNew === 'undefined') {
+        createNew = true;
+    }
     debugLog("--- getNodeById ----")
     var node = null;
     nodes.forEach(function(item) {
@@ -309,7 +370,10 @@ function addDeviceToSensor(node, sensor) {
     };
 }
 
-function getSensorInNode(node, message, isDevice) {
+function getSensorInNode(node, message, isDeviceData) {
+    if (typeof isDeviceData === 'undefined') {
+        isDeviceData = false;
+    }
     debugLog("--- getSensorInNode ----")
     var sensor = null;
     node.sensors.forEach(function(item) {
@@ -335,7 +399,7 @@ function getSensorInNode(node, message, isDevice) {
 
         sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
 
-        if(isDevice === true) {
+        if(isDeviceData === true) {
             addDeviceToSensor(node, sensor);
         }
 
@@ -354,10 +418,10 @@ function getSensorInNode(node, message, isDevice) {
 function connectToGateway() {
     settings = Homey.manager('settings').get('mys_settings');
     debugLog(settings)
-    if(settings) {
+    if(settings && (gwIsConnected === false)) {
         if((settings.gatewayType == 'mqtt') && 
-            (settings.host != '') && 
-            (settings.port != '') && 
+            (settings.mqtt_host != '') && 
+            (settings.mqtt_port != '') && 
             (settings.publish_topic != '') && 
             (settings.subscribe_topic != '')) {
 
@@ -367,9 +431,11 @@ function connectToGateway() {
             topicPublish = settings.publish_topic;
             topicSubscribe = settings.subscribe_topic;
 
-            gwClient = mqtt.connect('mqtt://'+settings.host+':'+settings.port);
+            gwClient = mqtt.connect('mqtt://'+settings.mqtt_host+':'+settings.mqtt_port);
      
             gwClient.on('connect', function () {
+                clearInterval(connectionTimer);
+                gwIsConnected = true;
                 debugLog('MQTT connected');
                 gwClient.subscribe(topicPublish + '/#');
                 gwClient.subscribe(topicSubscribe + '/#');
@@ -392,30 +458,37 @@ function connectToGateway() {
                 debugLog('MQTT reconnect');
             }).on('close', function () {
                 debugLog('MQTT disconnected');
+                startConnectionTimer();
+                gwClient = null;
+                gwIsConnected = false;
             }).on('error', function (error) {
                 debugLog('MQTT error');
                 debugLog(error);
             });
 
         } else if((settings.gatewayType == 'ethernet') && 
-                (settings.host != '') && 
-                (settings.port != '') && 
+                (settings.ethernet_host != '') && 
+                (settings.ethernet_port != '') && 
                 (settings.timeout != '')) {
 
             debugLog("----Ethernet-----")
             gwSplitChar = ';';
             gwClient = net.Socket();
-            gwClient.connect(settings.port, settings.host);
+            gwClient.connect(settings.ethernet_port, settings.ethernet_host);
 
             gwClient.setEncoding('ascii');
             gwClient.setTimeout(parseInt(settings.timeout));
             gwClient.on('connect', function() {
+                clearInterval(connectionTimer);
+                gwIsConnected = true;
                 debugLog('Ethernet connected');
             }).on('data', function(data) {
                 handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
             }).on('end', function() {
                 debugLog('Ethernet disconnected');
-
+                startConnectionTimer();
+                gwClient = null;
+                gwIsConnected = false;
             }).on('error', function() {
                 debugLog('Ethernet error');
             });

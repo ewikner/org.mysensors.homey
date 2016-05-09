@@ -27,10 +27,7 @@
                 "small": "./drivers/mysensors/assets/images/small.jpg"
             },
             "class": "sensor",
-            "capabilities": [ 
-                "measure_temperature", 
-                "measure_humidity" 
-            ],
+            "capabilities": [],
             "pair": [
                 {
                     "id": "list_my_devices",
@@ -49,20 +46,44 @@
     "flow": {
         "triggers": [
             {
-                "id": "last_temperature",
+                "id": "value_changed",
                 "title": {
-                    "en": "New temperature value"
+                    "en": "Value has changed"
                 },
-                "tokens":[
-                  {
-                    "name":"temp",
-                    "title": {
-                      "en":"Temperature"
-                    },
-                    "example":{
-                      "en":"In degree celcius"
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors",
+                        "placeholder": { 
+                            "en": "Which sensor?"
+                        }
                     }
-                  }
+                ]
+            }
+        ],
+        "actions": [
+            {
+                "id": "set_value",
+                "title": {
+                    "en": "Set value"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors",
+                        "placeholder": { "en": "Which sensor?"}
+                    },
+                    {
+                        "name": "value",
+                        "type": "text",
+                        "placeholder": [
+                            {
+                                "en": "Value"
+                            }
+                        ]
+                    }
                 ]
             }
         ]
