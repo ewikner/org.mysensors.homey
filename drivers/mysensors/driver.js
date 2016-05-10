@@ -57,7 +57,16 @@ module.exports.init = function (devices, callback) {
         var node = getNodeById(args.device.nodeId, false);
         var sensor = getSensorInNode(node, args.device, true);
         debugLog(sensor)
-        callback( null, (args.value_is === sensor.payload) );
+        var testValue = args.value_is;
+        switch(testValue) {
+            case 'true':
+                testValue = true;
+                break;
+            case 'false':
+                testValue = false;
+                break;
+        }
+        callback( null, (testValue === sensor.payload) );
     });
 
     Homey.manager('flow').on('action.set_value', function( callback, args ){
