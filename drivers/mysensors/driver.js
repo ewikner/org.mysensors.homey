@@ -42,52 +42,7 @@ module.exports.init = function (devices, callback) {
     }) 
     //connectToGateway();
     startConnectionTimer();
-
-    Homey.manager('flow').on('trigger.value_changed', function( callback, args, state ){
-        debugLog('FLOW = trigger.value_changed')
-        debugLog(args)
-        debugLog(state)
-
-        callback( null, true );
-    });
-
-    Homey.manager('flow').on('condition.value_is', function( callback, args ){
-        debugLog('FLOW = condition.value_is')
-        debugLog(args)
-        var node = getNodeById(args.device.nodeId, false);
-        var sensor = getSensorInNode(node, args.device, true);
-        debugLog(sensor)
-        var testValue = args.value_is;
-        switch(testValue) {
-            case 'true':
-                testValue = true;
-                break;
-            case 'false':
-                testValue = false;
-                break;
-        }
-        callback( null, (testValue === sensor.payload) );
-    });
-
-    Homey.manager('flow').on('action.set_value', function( callback, args ){
-        debugLog('FLOW = action.set_value')
-        debugLog(args)
-        var node = getNodeById(args.device.nodeId, false);
-        var sensor = getSensorInNode(node, args.device, true);
-        args.device.payload = args.value;
-        args.device.subType = sensor.payloadType;
-
-        handleSet(args.device, true, false);
-        sendData({
-                nodeId: node.nodeId,
-                sensorId: sensor.sensorId,
-                messageType: 'set',
-                ack: 0,
-                subType: sensor.payloadType,
-                payload: args.device.payload
-            });
-        callback( null, true );
-    });
+    createFlowListener();
 
     callback()
 }
@@ -136,6 +91,74 @@ module.exports.settings = function (device_data, newSettingsObj, oldSettingsObj,
   callback(null, true)
 }
 
+function createFlowListener() {
+    Homey.manager('flow').on('trigger.value_changed', function( callback, args, state ){
+        debugLog('FLOW = trigger.value_changed')
+        debugLog(args)
+        debugLog(state)
+
+        callback( null, true );
+    });
+
+    Homey.manager('flow').on('condition.value_is', function( callback, args ){
+        debugLog('FLOW = condition.value_is')
+        debugLog(args)
+        var node_sensor = getNodeAndSensorFromDevice(args.device);
+        var sensor = node_sensor.sensor;
+        debugLog(sensor)
+
+        var testValue = args.value_is;
+        switch(testValue) {
+            case 'true':
+                testValue = true;
+                break;
+            case 'false':
+                testValue = false;
+                break;
+        }
+        callback( null, (testValue === sensor.payload) );
+    });
+
+    Homey.manager('flow').on('condition.onoff', function( callback, args ){
+        debugLog('FLOW = condition.onoff')
+        debugLog(args)
+        var node_sensor = getNodeAndSensorFromDevice(args.device);
+        var sensor = node_sensor.sensor;
+        debugLog(sensor)
+        var testValue = args.value_is;
+        switch(testValue) {
+            case 'true':
+                testValue = true;
+                break;
+            case 'false':
+                testValue = false;
+                break;
+        }
+        callback( null, (testValue === sensor.payload) );
+    });
+
+    Homey.manager('flow').on('action.set_value', function( callback, args ){
+        debugLog('FLOW = action.set_value')
+        debugLog(args)
+        var node_sensor = getNodeAndSensorFromDevice(args.device);
+        var node = node_sensor.node;
+        var sensor = node_sensor.sensor;
+        
+        args.device.payload = args.value;
+        args.device.subType = sensor.payloadType;
+
+        handleSet(args.device, true, false);
+        sendData({
+                nodeId: node.nodeId,
+                sensorId: sensor.sensorId,
+                messageType: 'set',
+                ack: 0,
+                subType: sensor.payloadType,
+                payload: args.device.payload
+            });
+        callback( null, true );
+    });
+}
 function generateCapabilitiesFunctions() {
     var localCapabilities = {}
     
@@ -144,8 +167,8 @@ function generateCapabilitiesFunctions() {
                 debugLog("---SPECIAL GET")
                 debugLog(device_data);
                 debugLog("SPECIAL GET---")
-                var node = getNodeById(device_data.nodeId, false);
-                var sensor = getSensorInNode(node, device_data, true);
+                var node_sensor = getNodeAndSensorFromDevice(device_data);
+                var sensor = node_sensor.sensor;
                 if( typeof callback == 'function' ) {
                     callback( null, sensor.payload );
                 }
@@ -155,8 +178,8 @@ function generateCapabilitiesFunctions() {
                 debugLog(device_data);
                 debugLog(value)
                 debugLog("SPECIAL SET---")
-                var node = getNodeById(device_data.nodeId, false);
-                var sensor = getSensorInNode(node, device_data, true);
+                var node_sensor = getNodeAndSensorFromDevice(device_data);
+                var sensor = node_sensor.sensor;
                 device_data.payload = value;
                 device_data.subType = sensor.payloadType;
 
@@ -348,6 +371,12 @@ function getNextID(message) {
         subType: message.subType,
         payload: last_node_id
     });
+}
+
+function getNodeAndSensorFromDevice(device) {
+    var node = getNodeById(device.nodeId, false);
+    var sensor = getSensorInNode(node, device, true);
+    return {node: node, sensor: sensor}
 }
 
 function getNodeById(nodeId, createNew) {
