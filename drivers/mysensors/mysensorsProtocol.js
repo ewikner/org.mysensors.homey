@@ -29,7 +29,7 @@ exports.decodeMessage = function (messageStr,splitChar) {
     return messageObj;
 };
 
-exports.encodeMessage = function (messageObj,splitChar) {
+exports.encodeMessage = function (messageObj,splitChar, gwType) {
     var encodedObj = [
         messageObj.nodeId,
         messageObj.sensorId
@@ -50,8 +50,16 @@ exports.encodeMessage = function (messageObj,splitChar) {
             encodedObj.push(item.id);
         }
     });
-    encodedObj.push(messageObj.payload);
-    return encodedObj.join(splitChar);
+    var result = {};
+    if(gwType == 'mqtt') {
+        result.message_str = encodedObj.join(splitChar);
+        result.payload = messageObj.payload;
+    } else {
+        encodedObj.push(messageObj.payload);
+        result = encodedObj.join(splitChar);
+    }
+    
+    return result;
 }
 
 exports.getCapabilities = function(inputStr) {

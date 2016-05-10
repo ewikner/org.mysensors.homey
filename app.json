@@ -54,9 +54,36 @@
                     {
                         "name": "device",
                         "type": "device",
-                        "filter": "driver_id=mysensors",
+                        "filter": "driver_id=mysensors"
+                    }
+                ],
+                "tokens": [
+                    {
+                        "name": "current_value",
+                        "title": { 
+                            "en": "Value"
+                        }
+                    }
+                ]
+            }
+        ],
+        "conditions": [
+            {
+                "id": "value_is",
+                "title": {
+                    "en": "Value is..."
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value_is",
+                        "type": "text",
                         "placeholder": { 
-                            "en": "Which sensor?"
+                            "en": "Value IS "
                         }
                     }
                 ]
@@ -72,8 +99,7 @@
                     {
                         "name": "device",
                         "type": "device",
-                        "filter": "driver_id=mysensors",
-                        "placeholder": { "en": "Which sensor?"}
+                        "filter": "driver_id=mysensors"
                     },
                     {
                         "name": "value",
