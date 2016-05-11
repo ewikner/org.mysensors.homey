@@ -168,7 +168,7 @@ exports.req_set = [
     {'id': '8', 'value': 'V_WIND',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '9', 'value': 'V_GUST',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '10', 'value': 'V_DIRECTION',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '11', 'value': 'V_UV',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_ultraviolet', 'parse_value': 'parseToFloat'}},
+    {'id': '11', 'value': 'V_UV',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '12', 'value': 'V_WEIGHT',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '13', 'value': 'V_DISTANCE',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '14', 'value': 'V_IMPEDANCE',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
