@@ -3,7 +3,7 @@ var mqtt = require('mqtt');
 var net = require('net');
 
 var gwSplitChar = null;
-var nodes = [];
+var nodes = {};
 var gwClient = null;
 var gwIsConnected = false;
 var connectionTimer = null;
@@ -52,14 +52,20 @@ module.exports.pair = function (socket) {
     socket.on('list_devices', function( data, callback ) {
         var devices = [];
 
-        nodes.forEach(function(node){
-            node.sensors.forEach(function(sensor){
-                if(sensor.capabilities) {
-                    addDeviceToSensor(node, sensor);
-                    devices.push(sensor.device);
+        for(var nodeId in nodes){
+            var node = nodes[nodeId];
+            if(node !== undefined) {
+                for(var sensorId in node.sensors){
+                    var sensor = node.sensors[sensorId];
+                    if(sensor !== undefined) {
+                        if(sensor.capabilities) {
+                            addDeviceToSensor(node, sensor);
+                            devices.push(sensor.device);
+                        }
+                    }
                 }
-            })
-        });
+            }
+        }
 
         debugLog(devices);
         callback(null,devices);
@@ -143,7 +149,7 @@ function createFlowListener() {
         var node_sensor = getNodeAndSensorFromDevice(args.device);
         var node = node_sensor.node;
         var sensor = node_sensor.sensor;
-        
+
         args.device.payload = args.value;
         args.device.subType = sensor.payloadType;
 
@@ -291,7 +297,14 @@ function handleInternal(message) {
                 payload: new Date().getTime()/1000
             });
             break;
-        case 'I_VERSION': break;
+        case 'I_VERSION': 
+            if(message.nodeId > 0) {
+                var node = getNodeById(message.nodeId);
+                if(node.sketchName !== message.payload) {
+                    node.sketchName = message.payload;
+                }
+            }
+            break;
         case 'I_ID_REQUEST': 
             getNextID(message);
             break;
@@ -339,6 +352,7 @@ function handleInternal(message) {
 
 function handleStream(message) {
     debugLog('----- stream -------')
+    debugLog('Not implemented')
 }
 
 function sendData(messageObj) {
@@ -349,8 +363,8 @@ function sendData(messageObj) {
 
     if(settings.gatewayType == 'mqtt') {
         debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr.message_str);
-        debugLog(dataStr.payload);
-        //gwClient.publish('presence', 'Hello mqtt');
+        //debugLog(dataStr.payload);
+        gwClient.publish(settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
     } else if(settings.gatewayType == 'ethernet') {
         debugLog("SENDDATA to ethernet "+dataStr);
         gwClient.write(dataStr + "\n");
@@ -384,15 +398,10 @@ function getNodeById(nodeId, createNew) {
         createNew = true;
     }
     debugLog("--- getNodeById ----")
-    var node = null;
-    nodes.forEach(function(item) {
-        if(item.nodeId == nodeId) {
-            node = item;
-        }
-    })
+    var node = nodes[nodeId];
 
     if(createNew !== false) {
-        if(node == null) {
+        if(node === undefined) {
             if(last_node_id < nodeId) {
                 last_node_id = nodeId;
             }
@@ -402,9 +411,10 @@ function getNodeById(nodeId, createNew) {
                 batteryLevel: '',
                 sketchName: '',
                 sketchVersion: '',
-                sensors: []
+                version: '',
+                sensors: {}
             };
-            nodes.push(node);
+            nodes[node.nodeId] = node;
         }
     }
     
@@ -434,35 +444,38 @@ function getSensorInNode(node, message, isDeviceData) {
         isDeviceData = false;
     }
     debugLog("--- getSensorInNode ----")
-    var sensor = null;
-    node.sensors.forEach(function(item) {
-        if(item.sensorId == message.sensorId) {
-            sensor = item;
+    var sensor = node.sensors[message.sensorId];
+
+    if(sensor === undefined) {
+        if(message.sensorId == BROADCAST_ADDRESS) {
+            if(message.messageType == 'presentation') {
+                if(message.subType == 'S_ARDUINO_NODE') {
+                    node.version = message.payload;
+                }
+            }
+        } else {
+            debugLog("--- NEW SENSOR ----")
+            var subType = message.subType;
+            if(subType === undefined) {
+                subType = message.sensorType;
+            }
+            var sensor = {
+                sensorId: message.sensorId,
+                sensorType: subType,
+                payload: '',
+                payloadType: '',
+                time: '',
+                device: null
+            };
+
+            sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
+
+            if(isDeviceData === true) {
+                addDeviceToSensor(node, sensor);
+            }
+
+            node.sensors[sensor.sensorId] = sensor;
         }
-    })
-
-    if(sensor == null) {
-        debugLog("--- NEW SENSOR ----")
-        var subType = message.subType;
-        if(subType === undefined) {
-            subType = message.sensorType;
-        }
-        var sensor = {
-            sensorId: message.sensorId,
-            sensorType: subType,
-            payload: '',
-            payloadType: '',
-            time: '',
-            device: null
-        };
-
-        sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
-
-        if(isDeviceData === true) {
-            addDeviceToSensor(node, sensor);
-        }
-
-        node.sensors.push(sensor);
     } else {
         if(message.messageType == 'presentation') {
             if(sensor.sensorType != message.subType) {
@@ -502,17 +515,17 @@ function connectToGateway() {
             }).on('message', function (topic, data) {
                 var dataTopic = topic.substr(topic.indexOf('/')+1);
                 var mqttTopic = topic.substr(0,topic.indexOf('/'));
+                debugLog(topic + ' : '+ data);
+
                 switch(mqttTopic) {
                     case topicPublish:
                         debugLog('publish');
                         break;
                     case topicSubscribe:
                         debugLog('subscribe');
+                        handleMessage(mysensorsProtocol.decodeMessage(dataTopic+'/'+data, gwSplitChar))
                         break;
                 }
-                
-                debugLog(topic + ' : '+ data);
-                handleMessage(mysensorsProtocol.decodeMessage(dataTopic+'/'+data, gwSplitChar))
             }).on('reconnect', function () {
                 debugLog('MQTT reconnect');
             }).on('close', function () {

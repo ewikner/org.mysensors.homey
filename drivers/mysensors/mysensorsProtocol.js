@@ -17,14 +17,24 @@ exports.decodeMessage = function (messageStr,splitChar) {
         subType = 'req_set';
     }
 
-    var messageObj = {
-        nodeId: messageArr[0],
-        sensorId: messageArr[1],
-        messageType: messageType,
-        ack: messageArr[3],
-        subType: this[subType][messageArr[4]].value,
-        payload: messageArr[5].replace('\n','')
-    };
+    if((subType == 'stream') && (messageArr[4] != 0)) {
+        console.log("stream: "+messageStr);
+        messageObj = null;
+    }
+    try {
+        var messageObj = {
+            nodeId: messageArr[0],
+            sensorId: messageArr[1],
+            messageType: messageType,
+            ack: messageArr[3],
+            subType: this[subType][messageArr[4]].value,
+            payload: messageArr[5].replace('\n','')
+        };
+    } catch (e) {
+        console.log(e)
+        console.log(messageStr);
+        return null;
+    }
 
     return messageObj;
 };
@@ -159,7 +169,7 @@ exports.presentation = [
 exports.req_set = [
     {'id': '0', 'value': 'V_TEMP',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
     {'id': '1', 'value': 'V_HUM',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'parseToFloat'}},
-    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'light', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
+    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'button', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
     {'id': '3', 'value': 'V_PERCENTAGE',            'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': ''}},
     {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
     {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
@@ -238,4 +248,8 @@ exports.internal = [
     {'id': '21', 'value': 'I_DISCOVER_RESPONSE'},
     {'id': '22', 'value': 'I_HEARTBEAT_RESPONSE'},
     {'id': '23', 'value': 'I_LOCKED'}
+];
+
+exports.stream = [
+    {'id': '0', 'value': 'default'}
 ];
