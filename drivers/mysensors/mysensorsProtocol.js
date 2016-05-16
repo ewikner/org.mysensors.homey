@@ -51,11 +51,11 @@ exports.encodeMessage = function (messageObj,splitChar, gwType) {
     });
     encodedObj.push(messageObj.ack);
 
-    var subType = messageObj.messageType;
+    var messageType = messageObj.messageType;
     if((messageObj.messageType == 'get') || (messageObj.messageType == 'set')) {
-        subType = 'req_set';
+        messageType = 'req_set';
     }
-    this[subType].forEach(function(item, index) {
+    this[messageType].forEach(function(item, index) {
         if(item.value == messageObj.subType) {
             encodedObj.push(item.id);
         }

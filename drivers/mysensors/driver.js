@@ -154,12 +154,16 @@ function createFlowListener() {
         args.device.subType = sensor.payloadType;
 
         handleSet(args.device, true, false);
+        var payloadType = sensor.payloadType;
+        if(payloadType == '') {
+            payloadType = sensor.sensorType;
+        }
         sendData({
                 nodeId: node.nodeId,
                 sensorId: sensor.sensorId,
                 messageType: 'set',
                 ack: 0,
-                subType: sensor.payloadType,
+                subType: payloadType,
                 payload: args.device.payload
             });
         callback( null, true );
@@ -176,12 +180,16 @@ function createFlowListener() {
         args.device.subType = sensor.payloadType;
 
         handleSet(args.device, true, false);
+        var payloadType = sensor.payloadType;
+        if(payloadType == '') {
+            payloadType = sensor.sensorType;
+        }
         sendData({
                 nodeId: node.nodeId,
                 sensorId: sensor.sensorId,
                 messageType: 'set',
                 ack: 0,
-                subType: sensor.payloadType,
+                subType: payloadType,
                 payload: args.device.payload
             });
         callback( null, true );

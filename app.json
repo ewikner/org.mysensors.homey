@@ -155,19 +155,19 @@
                         "filter": "driver_id=mysensors"
                     },
                     {
-                        "name": "value_is",
+                        "name": "value",
                         "type": "dropdown",
                         "values": [
                             {
-                                "id": true,
+                                "id": 1,
                                 "label": {
-                                        "en": "1"
+                                        "en": "On"
                                 }
                             },
                             {
-                                "id": false,
+                                "id": 0,
                                 "label": {
-                                        "en": "0"
+                                        "en": "Off"
                                 }
                             }
                         ]
