@@ -40,8 +40,8 @@ module.exports.init = function (devices, callback) {
         var node = getNodeById(device_data.nodeId);
         var sensor = getSensorInNode(node, device_data, true);
     }) 
-    //connectToGateway();
-    startConnectionTimer();
+
+    connectToGateway();
     createFlowListener();
 
     callback()
@@ -164,6 +164,29 @@ function createFlowListener() {
             });
         callback( null, true );
     });
+
+    Homey.manager('flow').on('action.set_onoff', function( callback, args ){
+        debugLog('FLOW = action.set_value')
+        debugLog(args)
+        var node_sensor = getNodeAndSensorFromDevice(args.device);
+        var node = node_sensor.node;
+        var sensor = node_sensor.sensor;
+
+        args.device.payload = args.value;
+        args.device.subType = sensor.payloadType;
+
+        handleSet(args.device, true, false);
+        sendData({
+                nodeId: node.nodeId,
+                sensorId: sensor.sensorId,
+                messageType: 'set',
+                ack: 0,
+                subType: sensor.payloadType,
+                payload: args.device.payload
+            });
+        callback( null, true );
+    });
+    
 }
 function generateCapabilitiesFunctions() {
     var localCapabilities = {}
@@ -361,13 +384,15 @@ function sendData(messageObj) {
     var dataStr = mysensorsProtocol.encodeMessage(messageObj, gwSplitChar, settings.gatewayType);
     debugLog(dataStr);
 
-    if(settings.gatewayType == 'mqtt') {
-        debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr.message_str);
-        //debugLog(dataStr.payload);
-        gwClient.publish(settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
-    } else if(settings.gatewayType == 'ethernet') {
-        debugLog("SENDDATA to ethernet "+dataStr);
-        gwClient.write(dataStr + "\n");
+    if(gwClient != null) {
+        if(settings.gatewayType == 'mqtt') {
+            debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr.message_str);
+            //debugLog(dataStr.payload);
+            gwClient.publish(settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
+        } else if(settings.gatewayType == 'ethernet') {
+            debugLog("SENDDATA to ethernet "+dataStr);
+            gwClient.write(dataStr);
+        }
     }
 }
 
@@ -561,12 +586,14 @@ function connectToGateway() {
                 startConnectionTimer();
                 gwClient = null;
                 gwIsConnected = false;
-            }).on('error', function() {
-                debugLog('Ethernet error');
+            }).on('error', function(err) {
+                debugLog('Ethernet error'+err.message);
             });
         } else {
             debugLog("----TEST-----")
         }
+    } else {
+        startConnectionTimer();
     }
 }
 
