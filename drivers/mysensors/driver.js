@@ -32,8 +32,8 @@ function startConnectionTimer() {
     connectionTimer = setInterval(connectToGateway, 60000);
 }
 module.exports.init = function (devices, callback) {
-    generateCapabilitiesFunctions();
     debugLog('init');
+    generateCapabilitiesFunctions();
     debugLog(devices);
 
     devices.forEach(function(device_data) {
@@ -154,16 +154,12 @@ function createFlowListener() {
         args.device.subType = sensor.payloadType;
 
         handleSet(args.device, true, false);
-        var payloadType = sensor.payloadType;
-        if(payloadType == '') {
-            payloadType = sensor.sensorType;
-        }
         sendData({
                 nodeId: node.nodeId,
                 sensorId: sensor.sensorId,
                 messageType: 'set',
                 ack: 0,
-                subType: payloadType,
+                subType: sensor.payloadType,
                 payload: args.device.payload
             });
         callback( null, true );
@@ -180,16 +176,12 @@ function createFlowListener() {
         args.device.subType = sensor.payloadType;
 
         handleSet(args.device, true, false);
-        var payloadType = sensor.payloadType;
-        if(payloadType == '') {
-            payloadType = sensor.sensorType;
-        }
         sendData({
                 nodeId: node.nodeId,
                 sensorId: sensor.sensorId,
                 messageType: 'set',
                 ack: 0,
-                subType: payloadType,
+                subType: sensor.payloadType,
                 payload: args.device.payload
             });
         callback( null, true );
@@ -280,9 +272,6 @@ function handleSet(message, isDeviceData, triggerFlow) {
 
             if(sensor.device) {
                 var capa = sensor.capabilities.sub_type;
-                if(sensor.capabilities.type == 'mysensors') {
-                    capa = sensor.capabilities.sub_type.id;
-                }
 
                 debugLog('capability: ' + capa + ' payload: '+sensor.payload)
                 module.exports.realtime(sensor.device.data, capa, sensor.payload, function(err, success) {
@@ -387,8 +376,25 @@ function handleStream(message) {
 }
 
 function sendData(messageObj) {
-    // TODO
     debugLog('-- SEND DATA ----');
+    if(messageObj.subType == '') {
+        var node = nodes[messageObj.nodeId];
+        var sensor = node.sensors[messageObj.sensorId];
+
+        var firstChar = sensor.sensorType.charAt(0);
+
+        if(firstChar == 'S') {
+            mysensorsProtocol.presentation.forEach(function(item, index) {
+                if(item.value == sensor.sensorType) {
+                    if(item.variables.length > 0) {
+                        messageObj.subType = item.variables[0];
+                    }
+                }
+            });
+        } else if(firstChar == 'V') {
+            messageObj.subType = sensor.sensorType;
+        }
+    }
     var dataStr = mysensorsProtocol.encodeMessage(messageObj, gwSplitChar, settings.gatewayType);
     debugLog(dataStr);
 
@@ -457,7 +463,8 @@ function getNodeById(nodeId, createNew) {
 function addDeviceToSensor(node, sensor) {
     var data_capabilities = [];
     if(sensor.capabilities) {
-        data_capabilities.push(sensor.capabilities.sub_type);
+        var sensorCapa = sensor.capabilities.sub_type;
+        data_capabilities.push(sensorCapa);
     }
 
     sensor.device = {
@@ -588,7 +595,10 @@ function connectToGateway() {
                 gwIsConnected = true;
                 debugLog('Ethernet connected');
             }).on('data', function(data) {
-                handleMessage(mysensorsProtocol.decodeMessage(data, gwSplitChar))
+                var dataArr = data.split('\n');
+                dataArr.forEach(function(data_str, index) {
+                    handleMessage(mysensorsProtocol.decodeMessage(data_str, gwSplitChar))
+                });
             }).on('end', function() {
                 debugLog('Ethernet disconnected');
                 startConnectionTimer();
