@@ -405,7 +405,7 @@ function sendData(messageObj) {
             gwClient.publish(settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
         } else if(settings.gatewayType == 'ethernet') {
             debugLog("SENDDATA to ethernet "+dataStr);
-            gwClient.write(dataStr);
+            gwClient.write(dataStr + "\n");
         }
     }
 }
