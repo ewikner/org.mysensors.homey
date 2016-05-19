@@ -131,6 +131,7 @@ function createFlowListener() {
         var node_sensor = getNodeAndSensorFromDevice(args.device);
         var sensor = node_sensor.sensor;
         debugLog(sensor)
+
         var testValue = args.value_is;
         switch(testValue) {
             case 'true':
@@ -145,49 +146,40 @@ function createFlowListener() {
 
     Homey.manager('flow').on('action.set_value', function( callback, args ){
         debugLog('FLOW = action.set_value')
-        debugLog(args)
-        var node_sensor = getNodeAndSensorFromDevice(args.device);
-        var node = node_sensor.node;
-        var sensor = node_sensor.sensor;
-
-        args.device.payload = args.value;
-        args.device.subType = sensor.payloadType;
-
-        handleSet(args.device, true, false);
-        sendData({
-                nodeId: node.nodeId,
-                sensorId: sensor.sensorId,
-                messageType: 'set',
-                ack: 0,
-                subType: sensor.payloadType,
-                payload: args.device.payload
-            });
-        callback( null, true );
+        actionSet(args, args.value, function(result ) {
+            callback( null, result );
+        })
     });
 
     Homey.manager('flow').on('action.set_onoff', function( callback, args ){
-        debugLog('FLOW = action.set_value')
-        debugLog(args)
-        var node_sensor = getNodeAndSensorFromDevice(args.device);
-        var node = node_sensor.node;
-        var sensor = node_sensor.sensor;
-
-        args.device.payload = args.value;
-        args.device.subType = sensor.payloadType;
-
-        handleSet(args.device, true, false);
-        sendData({
-                nodeId: node.nodeId,
-                sensorId: sensor.sensorId,
-                messageType: 'set',
-                ack: 0,
-                subType: sensor.payloadType,
-                payload: args.device.payload
-            });
-        callback( null, true );
+        debugLog('FLOW = action.set_onoff')
+        actionSet(args, args.value, function(result ) {
+            callback( null, result );
+        })
     });
-    
 }
+
+function actionSet(args, value, callback) {
+    debugLog(args)
+    var node_sensor = getNodeAndSensorFromDevice(args.device);
+    var node = node_sensor.node;
+    var sensor = node_sensor.sensor;
+
+    args.device.payload = value;
+    args.device.subType = sensor.payloadType;
+
+    handleSet(args.device, true, false);
+    sendData({
+            nodeId: node.nodeId,
+            sensorId: sensor.sensorId,
+            messageType: 'set',
+            ack: 0,
+            subType: sensor.payloadType,
+            payload: args.device.payload
+        });
+    callback( true );
+}
+
 function generateCapabilitiesFunctions() {
     var localCapabilities = {}
     
@@ -268,13 +260,14 @@ function handleSet(message, isDeviceData, triggerFlow) {
 
         debugLog(sensor);
         if(sensor.capabilities) {
+            var old_payload = sensor.payload;
             sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
 
             if(sensor.device) {
-                var capa = sensor.capabilities.sub_type;
-
-                debugLog('capability: ' + capa + ' payload: '+sensor.payload)
-                module.exports.realtime(sensor.device.data, capa, sensor.payload, function(err, success) {
+                var capability = sensor.capabilities.sub_type;
+                
+                debugLog('capability: ' + capability + ' payload: '+sensor.payload)
+                module.exports.realtime(sensor.device.data, capability, sensor.payload, function(err, success) {
                     if (err) {
                         debugLog('! Realtime: ' + err); 
                     }
@@ -462,20 +455,24 @@ function getNodeById(nodeId, createNew) {
 
 function addDeviceToSensor(node, sensor) {
     var data_capabilities = [];
+    var data_class = "";
     if(sensor.capabilities) {
-        var sensorCapa = sensor.capabilities.sub_type;
-        data_capabilities.push(sensorCapa);
+
+        var sensor_capability = sensor.capabilities.sub_type;
+        data_class = sensor.capabilities.type;
+        data_capabilities.push(sensor_capability);
     }
 
     sensor.device = {
         data: {
-            id : node.nodeId + '_' + sensor.sensorId,
+            id: node.nodeId + '_' + sensor.sensorId,
             nodeId: node.nodeId,
             sensorId: sensor.sensorId,
             sensorType: sensor.sensorType
         },
         name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
-        capabilities    : data_capabilities
+        class: data_class,
+        capabilities: data_capabilities
     };
 }
 

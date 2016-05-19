@@ -8,13 +8,14 @@
     "description": {
         "en": "Mysensors.org app to Homey"
     },
+    "category": ["climate","appliances", "lights"],
     "author": {
         "name": "Erik Wikner",
         "email": "erik.wikner@gmail.com"
     },
     "images": {
-        "large": "assets/images/large.jpg",
-        "small": "assets/images/small.jpg"
+        "large": "assets/images/large.png",
+        "small": "assets/images/small.png"
     },
     "drivers": [
         {
@@ -23,10 +24,10 @@
                 "en": "Mysensors Driver"
             },
             "images": {
-                "large": "./drivers/mysensors/assets/images/large.jpg",
-                "small": "./drivers/mysensors/assets/images/small.jpg"
+                "large": "./drivers/mysensors/assets/images/large.png",
+                "small": "./drivers/mysensors/assets/images/small.png"
             },
-            "class": "sensor",
+            "class": "",
             "capabilities": [],
             "pair": [
                 {
