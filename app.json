@@ -66,6 +66,48 @@
                         }
                     }
                 ]
+            },
+            {
+                "id": "value_on",
+                "title": {
+                    "en": "Value is On"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    }
+                ],
+                "tokens": [
+                    {
+                        "name": "current_value",
+                        "title": { 
+                            "en": "Value"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "value_off",
+                "title": {
+                    "en": "Value is Off"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    }
+                ],
+                "tokens": [
+                    {
+                        "name": "current_value",
+                        "title": { 
+                            "en": "Value"
+                        }
+                    }
+                ]
             }
         ],
         "conditions": [
@@ -123,9 +165,9 @@
         ],
         "actions": [
             {
-                "id": "set_value",
+                "id": "set_text",
                 "title": {
-                    "en": "Set value"
+                    "en": "Set text"
                 },
                 "args": [
                     {
@@ -136,6 +178,28 @@
                     {
                         "name": "value",
                         "type": "text",
+                        "placeholder": [
+                            {
+                                "en": "Value"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "set_number",
+                "title": {
+                    "en": "Set number"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value",
+                        "type": "number",
                         "placeholder": [
                             {
                                 "en": "Value"

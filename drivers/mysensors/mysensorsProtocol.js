@@ -11,17 +11,18 @@ exports.decodeMessage = function (messageStr,splitChar) {
         return null;
     }
 
-    var messageType = this.types[messageArr[2]].value;
-    var subType = messageType;
-    if((messageType == 'get') || (messageType == 'set')) {
-        subType = 'req_set';
-    }
-
-    if((subType == 'stream') && (messageArr[4] != 0)) {
-        console.log("stream: "+messageStr);
-        messageObj = null;
-    }
     try {
+        var messageType = this.types[messageArr[2]].value;
+        var subType = messageType;
+        if((messageType == 'get') || (messageType == 'set')) {
+            subType = 'req_set';
+        }
+
+        if((subType == 'stream') && (messageArr[4] != 0)) {
+            console.log("stream: "+messageStr);
+            return null;
+        }
+
         var messageObj = {
             nodeId: messageArr[0],
             sensorId: messageArr[1],
@@ -61,6 +62,14 @@ exports.encodeMessage = function (messageObj,splitChar, gwType) {
         }
     });
     var result = {};
+    switch(messageObj.payload) {
+        case true:
+            messageObj.payload = '1';
+            break;
+        case false:
+            messageObj.payload = '0';
+            break;
+    }
     if(gwType == 'mqtt') {
         result.message_str = encodedObj.join(splitChar);
         result.payload = messageObj.payload;

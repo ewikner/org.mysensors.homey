@@ -100,37 +100,29 @@ module.exports.settings = function (device_data, newSettingsObj, oldSettingsObj,
 function createFlowListener() {
     Homey.manager('flow').on('trigger.value_changed', function( callback, args, state ){
         debugLog('FLOW = trigger.value_changed')
-        debugLog(args)
-        debugLog(state)
-
+        callback( null, true );
+    });
+    Homey.manager('flow').on('trigger.value_on', function( callback, args, state ){
+        debugLog('FLOW = trigger.value_on')
+        callback( null, true );
+    });
+    Homey.manager('flow').on('trigger.value_off', function( callback, args, state ){
+        debugLog('FLOW = trigger.value_off');
         callback( null, true );
     });
 
     Homey.manager('flow').on('condition.value_is', function( callback, args ){
         debugLog('FLOW = condition.value_is')
-        debugLog(args)
         var node_sensor = getNodeAndSensorFromDevice(args.device);
         var sensor = node_sensor.sensor;
-        debugLog(sensor)
 
-        var testValue = args.value_is;
-        switch(testValue) {
-            case 'true':
-                testValue = true;
-                break;
-            case 'false':
-                testValue = false;
-                break;
-        }
-        callback( null, (testValue === sensor.payload) );
+        callback( null, (args.value_is === sensor.payload) );
     });
 
     Homey.manager('flow').on('condition.onoff', function( callback, args ){
         debugLog('FLOW = condition.onoff')
-        debugLog(args)
         var node_sensor = getNodeAndSensorFromDevice(args.device);
         var sensor = node_sensor.sensor;
-        debugLog(sensor)
 
         var testValue = args.value_is;
         switch(testValue) {
@@ -144,8 +136,15 @@ function createFlowListener() {
         callback( null, (testValue === sensor.payload) );
     });
 
-    Homey.manager('flow').on('action.set_value', function( callback, args ){
-        debugLog('FLOW = action.set_value')
+    Homey.manager('flow').on('action.set_text', function( callback, args ){
+        debugLog('FLOW = action.set_text')
+        actionSet(args, args.value, function(result ) {
+            callback( null, result );
+        })
+    });
+
+    Homey.manager('flow').on('action.set_number', function( callback, args ){
+        debugLog('FLOW = action.set_number')
         actionSet(args, args.value, function(result ) {
             callback( null, result );
         })
@@ -168,15 +167,7 @@ function actionSet(args, value, callback) {
     args.device.payload = value;
     args.device.subType = sensor.payloadType;
 
-    handleSet(args.device, true, false);
-    sendData({
-            nodeId: node.nodeId,
-            sensorId: sensor.sensorId,
-            messageType: 'set',
-            ack: 0,
-            subType: sensor.payloadType,
-            payload: args.device.payload
-        });
+    handleSet(args.device, true, false, true);
     callback( true );
 }
 
@@ -204,9 +195,9 @@ function generateCapabilitiesFunctions() {
                 device_data.payload = value;
                 device_data.subType = sensor.payloadType;
 
-                handleSet(device_data, true);
+                handleSet(device_data, true, true, true);
                 if( typeof callback == 'function' ) {
-                    callback( null, sensor.payload );
+                    callback( null, device_data.payload );
                 }
             }
     };
@@ -243,13 +234,17 @@ function handlePresentation(message) {
     debugLog(node);
 }
 
-function handleSet(message, isDeviceData, triggerFlow) {
+function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
     if (typeof isDeviceData === 'undefined') {
         isDeviceData = false;
     }
     if (typeof triggerFlow === 'undefined') {
         triggerFlow = true;
     }
+    if (typeof sendSetData === 'undefined') {
+        sendSetData = false;
+    }
+
     debugLog('----- set -------')
     var node = getNodeById(message.nodeId);
     var sensor = getSensorInNode(node, message, isDeviceData);
@@ -274,9 +269,27 @@ function handleSet(message, isDeviceData, triggerFlow) {
                     debugLog('Realtime: ' + success); 
                 });
                 if(triggerFlow) {
-                    Homey.manager('flow').triggerDevice('value_changed', { current_value: sensor.payload }, null, sensor.device.data, function(err, result){                
-                        console.log('value_changed ', result);
-                        if( err ) return Homey.error( err);
+                    if(old_payload != sensor.payload) {
+                        Homey.manager('flow').triggerDevice('value_changed', { current_value: sensor.payload }, null, sensor.device.data);
+                    }
+                    
+                    switch(sensor.payload) {
+                        case true:
+                            Homey.manager('flow').triggerDevice('value_on', { current_value: sensor.payload }, null, sensor.device.data);
+                            break;
+                        case false:
+                            Homey.manager('flow').triggerDevice('value_off', { current_value: sensor.payload }, null, sensor.device.data);
+                            break;
+                    }
+                }
+                if(sendSetData) {
+                    sendData({
+                        nodeId: node.nodeId,
+                        sensorId: sensor.sensorId,
+                        messageType: 'set',
+                        ack: 0,
+                        subType: sensor.payloadType,
+                        payload: sensor.payload
                     });
                 }
             }
@@ -394,7 +407,6 @@ function sendData(messageObj) {
     if(gwClient != null) {
         if(settings.gatewayType == 'mqtt') {
             debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr.message_str);
-            //debugLog(dataStr.payload);
             gwClient.publish(settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
         } else if(settings.gatewayType == 'ethernet') {
             debugLog("SENDDATA to ethernet "+dataStr);
@@ -543,20 +555,21 @@ function connectToGateway() {
             gwClient = mqtt.connect('mqtt://'+settings.mqtt_host+':'+settings.mqtt_port);
      
             gwClient.on('connect', function () {
-                clearInterval(connectionTimer);
-                gwIsConnected = true;
-                debugLog('MQTT connected');
-                gwClient.subscribe(topicPublish + '/#');
-                gwClient.subscribe(topicSubscribe + '/#');
+                if(gwClient != null) {
+                    clearInterval(connectionTimer);
+                    gwIsConnected = true;
+                    debugLog('MQTT connected');
+                    gwClient.subscribe(topicPublish + '/#');
+                    gwClient.subscribe(topicSubscribe + '/#');
+                }
               
             }).on('message', function (topic, data) {
                 var dataTopic = topic.substr(topic.indexOf('/')+1);
                 var mqttTopic = topic.substr(0,topic.indexOf('/'));
-                debugLog(topic + ' : '+ data);
 
                 switch(mqttTopic) {
                     case topicPublish:
-                        debugLog('publish');
+                        //debugLog('publish');
                         break;
                     case topicSubscribe:
                         debugLog('subscribe');
