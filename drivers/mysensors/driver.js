@@ -214,9 +214,9 @@ function generateCapabilitiesFunctions() {
 }
 
 function handleMessage(message) {
-    debugLog('----- handleMessage -------')
-    debugLog(message)
     if(message) {
+        debugLog('----- handleMessage -------')
+        debugLog(message)
         switch(message.messageType) {
             case 'presentation': handlePresentation(message); break;
             case 'set': handleSet(message); break;
@@ -260,7 +260,7 @@ function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
 
             if(sensor.device) {
                 var capability = sensor.capabilities.sub_type;
-                
+
                 debugLog('capability: ' + capability + ' payload: '+sensor.payload)
                 module.exports.realtime(sensor.device.data, capability, sensor.payload, function(err, success) {
                     if (err) {
@@ -270,15 +270,21 @@ function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
                 });
                 if(triggerFlow) {
                     if(old_payload != sensor.payload) {
-                        Homey.manager('flow').triggerDevice('value_changed', { current_value: sensor.payload }, null, sensor.device.data);
+                        Homey.manager('flow').triggerDevice('value_changed', { current_value: sensor.payload }, null, sensor.device.data, function(err, result) {
+                            debugLog("trigger flow.value_changed = "+ node.nodeId +':'+ sensor.sensorId)
+                        });
                     }
                     
                     switch(sensor.payload) {
                         case true:
-                            Homey.manager('flow').triggerDevice('value_on', { current_value: sensor.payload }, null, sensor.device.data);
+                            Homey.manager('flow').triggerDevice('value_on', { current_value: sensor.payload }, null, sensor.device.data, function(err, result) {
+                                debugLog("trigger flow.value_on = "+ node.nodeId +':'+ sensor.sensorId)
+                            });
                             break;
                         case false:
-                            Homey.manager('flow').triggerDevice('value_off', { current_value: sensor.payload }, null, sensor.device.data);
+                            Homey.manager('flow').triggerDevice('value_off', { current_value: sensor.payload }, null, sensor.device.data, function(err, result) {
+                                debugLog("trigger flow.value_off = "+ node.nodeId +':'+ sensor.sensorId)
+                            });
                             break;
                     }
                 }
@@ -472,6 +478,7 @@ function addDeviceToSensor(node, sensor) {
 
         var sensor_capability = sensor.capabilities.sub_type;
         data_class = sensor.capabilities.type;
+
         data_capabilities.push(sensor_capability);
     }
 
