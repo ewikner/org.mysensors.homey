@@ -112,8 +112,8 @@ exports.getCapabilities = function(inputStr) {
 
 exports.parsePayload = function(type_type, value) {
     switch(type_type) {
-        case 'parseToFloat': return parseFloat(value); break;
-        case 'parseToBoolean': 
+        case 'number': return parseFloat(value); break;
+        case 'boolean': 
             if(value == 0) {
                 return false;
             } else {
@@ -176,14 +176,14 @@ exports.presentation = [
 ];
 
 exports.req_set = [
-    {'id': '0', 'value': 'V_TEMP',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
-    {'id': '1', 'value': 'V_HUM',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'parseToFloat'}},
-    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'socket', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
+    {'id': '0', 'value': 'V_TEMP',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
+    {'id': '1', 'value': 'V_HUM',                   'capabilities': {'type': 'sensor', 'sub_type': 'measure_humidity', 'parse_value': 'number'}},
+    {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'socket', 'sub_type': 'onoff', 'parse_value': 'boolean'}},
     {'id': '3', 'value': 'V_PERCENTAGE',            'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': ''}},
-    {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
-    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'parseToFloat'}},
-    {'id': '6', 'value': 'V_RAIN',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'parseToFloat'}},
-    {'id': '7', 'value': 'V_RAINRATE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'parseToFloat'}},
+    {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'number'}},
+    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'number'}},
+    {'id': '6', 'value': 'V_RAIN',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'number'}},
+    {'id': '7', 'value': 'V_RAINRATE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'number'}},
     {'id': '8', 'value': 'V_WIND',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_wind_strength', 'parse_value': ''}},
     {'id': '9', 'value': 'V_GUST',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_gust_strength', 'parse_value': ''}},
     {'id': '10', 'value': 'V_DIRECTION',            'capabilities': {'type': 'sensor', 'sub_type': 'measure_wind_angle', 'parse_value': ''}},
@@ -191,15 +191,15 @@ exports.req_set = [
     {'id': '12', 'value': 'V_WEIGHT',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '13', 'value': 'V_DISTANCE',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '14', 'value': 'V_IMPEDANCE',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '15', 'value': 'V_ARMED',                'capabilities': {'type': 'sensor', 'sub_type': 'alarm_contact', 'parse_value': 'parseToBoolean'}},
-    {'id': '16', 'value': 'V_TRIPPED',              'capabilities': {'type': 'socket', 'sub_type': 'onoff', 'parse_value': 'parseToBoolean'}},
-    {'id': '17', 'value': 'V_WATT',                 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
-    {'id': '18', 'value': 'V_KWH',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'parseToFloat'}},
+    {'id': '15', 'value': 'V_ARMED',                'capabilities': {'type': 'sensor', 'sub_type': 'alarm_contact', 'parse_value': 'boolean'}},
+    {'id': '16', 'value': 'V_TRIPPED',              'capabilities': {'type': 'socket', 'sub_type': 'onoff', 'parse_value': 'boolean'}},
+    {'id': '17', 'value': 'V_WATT',                 'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'number'}},
+    {'id': '18', 'value': 'V_KWH',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_power', 'parse_value': 'number'}},
     {'id': '19', 'value': 'V_SCENE_ON',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '20', 'value': 'V_SCENE_OFF',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '21', 'value': 'V_HVAC_FLOW_STATE',      'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '21', 'value': 'V_HVAC_FLOW_STATE',      'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
     {'id': '22', 'value': 'V_HVAC_SPEED',           'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '23', 'value': 'V_LIGHT_LEVEL',          'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'parseToFloat'}},
+    {'id': '23', 'value': 'V_LIGHT_LEVEL',          'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'number'}},
     {'id': '24', 'value': 'V_VAR1',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '25', 'value': 'V_VAR2',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '26', 'value': 'V_VAR3',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
@@ -213,16 +213,16 @@ exports.req_set = [
     {'id': '34', 'value': 'V_FLOW',                 'capabilities': {'type': 'sensor', 'sub_type': 'meter_water', 'parse_value': ''}},
     {'id': '35', 'value': 'V_VOLUME',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '36', 'value': 'V_LOCK_STATUS',          'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '37', 'value': 'V_LEVEL',                'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'parseToFloat'}},
+    {'id': '37', 'value': 'V_LEVEL',                'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'number'}},
     {'id': '38', 'value': 'V_VOLTAGE',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '39', 'value': 'V_CURRENT',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '40', 'value': 'V_RGB',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '41', 'value': 'V_RGBW',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '42', 'value': 'V_ID',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '43', 'value': 'V_UNIT_PREFIX',          'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '44', 'value': 'V_HVAC_SETPOINT_COOL',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
-    {'id': '45', 'value': 'V_HVAC_SETPOINT_HEAT',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
-    {'id': '46', 'value': 'V_HVAC_FLOW_MODE',       'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'parseToFloat'}},
+    {'id': '44', 'value': 'V_HVAC_SETPOINT_COOL',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
+    {'id': '45', 'value': 'V_HVAC_SETPOINT_HEAT',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
+    {'id': '46', 'value': 'V_HVAC_FLOW_MODE',       'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
     {'id': '47', 'value': 'V_TEXT',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '48', 'value': 'V_CUSTOM',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '49', 'value': 'V_POSITION',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},

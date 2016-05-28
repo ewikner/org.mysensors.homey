@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.ui.js"></script>
+    <link rel="stylesheet" href="jquery-ui.css">
+	<link rel="stylesheet" href="/manager/webserver/assets/font/fontawesome/fontawesome.css">
+	<script type="text/javascript">
+		Homey.setTitle('Add your sensor');
+
+		var dialog, form;
+		var selectedSensor = null;
+		var devices = null;
+		var capabilitiesArray = new Array();
+
+		function loadCapabilities() {
+			$( "#capabilities_subtype" ).empty();
+			$( "#capabilities_class" ).empty();
+
+			$.each(capabilitiesArray, function(key, value) {   
+				$( "#capabilities_class" ).append($("<option></option>")
+					.attr("value",value.id)
+					.text(value.label)
+					.data('children', value.children)); 
+			});
+		}
+
+		function saveChanges() {
+			selectedSensor.name = $( "#name" ).val();
+			selectedSensor.class = $( "#capabilities_class" ).val();
+			selectedSensor.capabilities[0] = $( "#capabilities_subtype" ).val();
+
+			selectedSensor.isAdded = true;
+
+			Homey.emit( 'addedSensor', selectedSensor, function( err, result ){
+			    Homey.addDevice(selectedSensor, function(){
+			    	init();
+			    	dialog.dialog( "close" );
+				});
+			});
+
+			return true;
+		}
+
+		dialog = $( "#mysensor-form" ).dialog({
+			autoOpen: false,
+			modal: true,
+			draggable: false,
+			resizable: false,
+			buttons: {
+				"Save": saveChanges,
+				Cancel: function() {
+					dialog.dialog( "close" );
+				}
+			},
+			close: function() {
+				form[ 0 ].reset();
+			}
+		});
+
+		$(".ui-dialog-titlebar").hide();
+
+		form = dialog.find( "form" ).on( "submit", function( event ) {
+			event.preventDefault();
+			saveChanges();
+		});
+
+		$( "#capabilities_class" ).on( "change", function() {
+			var selectedClass = $( "#capabilities_class" ).find(":selected");
+			var selectedChildren = selectedClass.data('children');
+			$( "#capabilities_subtype" ).empty();
+			$.each(selectedChildren, function(key, value) {
+				$( "#capabilities_subtype" ).append($("<option></option>").attr("value",value).text(value));
+			});
+		});
+
+		function onClickLi(row) {
+			selectedSensor = $(row).data('data');
+
+			$( "#name" ).val(selectedSensor.name);
+			$( "#capabilities_class" ).val(selectedSensor.class);
+			$( "#capabilities_class" ).trigger('change');
+
+			$( "#capabilities_subtype" ).val(selectedSensor.capabilities[0]);
+			
+			dialog.dialog( "open" );
+		}
+
+		function listDevices() {
+			$("#sensors_list").append("<ul></ul>");
+			var iconPath = '/app/org.mysensors.homey/drivers/mysensors/assets/icon.svg';
+
+			$.each(devices, function(i,v) {
+				var row = $('<label>').attr('for','sensor-'+ v.data.id).append(
+							$('<div>').attr('class','overlay'),
+							$('<span>').attr('class','icon').attr('style','-webkit-mask-image: url('+iconPath+')'),
+							$('<input>').attr('class','name').attr('value',v.name).attr('tabindex','-1'));
+
+				$("ul").append($('<li>').attr('class','device').attr('onclick','onClickLi(this)').append(row).data('data',v));
+			});
+		}
+		function init() {
+			Homey.emit('select_capabilities', function(deviceArr, capabilitiesArr) {
+				$("#sensors_list").empty();
+
+				if(Object.keys(deviceArr).length == 0) {
+					$("#sensors_list").append("<p>You may close this window.</p>");
+					Homey.setTitle('There were no new sensors!');
+				} else {
+					$.each(capabilitiesArr, function(key, value) {
+						capabilitiesArray.push({id: key, label: value.name.en, children: value.capabilities});
+					});
+					loadCapabilities();
+
+					devices = deviceArr;
+					listDevices();
+				}
+			});
+		}
+
+		init();
+	</script>
+</head>
+<body>
+<div id="sensors_list"></div>
+<div id="mysensor-form" class="mys-fontsize">
+  <form>
+    <fieldset class="mys-fieldset">
+      <label for="name" class="mys-label">Name</label>
+      <input type="text" name="name" id="name" value="" class="mys-fontsize mys-input ui-widget-content ui-corner-all">
+      <label for="capabilities_class" class="mys-label">Change device type</label>
+      <select id="capabilities_class" class="ui-menu"></select>
+      <label for="capabilities_subtype" class="mys-label">Change capability</label>
+      <select id="capabilities_subtype" class="ui-menu"></select>
+
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+</body>
+</html>

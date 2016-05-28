@@ -1,4 +1,5 @@
 var mysensorsProtocol = require('./mysensorsProtocol');
+var deviceClasses = require('./deviceclasses.json');
 var mqtt = require('mqtt');
 var net = require('net');
 
@@ -39,6 +40,7 @@ module.exports.init = function (devices, callback) {
     devices.forEach(function(device_data) {
         var node = getNodeById(device_data.nodeId);
         var sensor = getSensorInNode(node, device_data, true);
+        sensor.device.isAdded = true;
     }) 
 
     connectToGateway();
@@ -49,7 +51,9 @@ module.exports.init = function (devices, callback) {
 
 // Pairing functionality
 module.exports.pair = function (socket) {
-    socket.on('list_devices', function( data, callback ) {
+
+    socket.on('select_capabilities', function( data, callback ) {
+        debugLog('select_capabilities');
         var devices = [];
 
         for(var nodeId in nodes){
@@ -60,22 +64,29 @@ module.exports.pair = function (socket) {
                     if(sensor !== undefined) {
                         if(sensor.capabilities) {
                             addDeviceToSensor(node, sensor);
-                            devices.push(sensor.device);
+                            if(!sensor.device.isAdded) {
+                                devices.push(sensor.device);
+                            }
                         }
                     }
                 }
             }
         }
+        callback( devices , deviceClasses.devices);
+    });
+    
+    socket.on('addedSensor', function( device_data, callback ) {
+        var node = nodes[device_data.data.nodeId];
+        var sensor = node.sensors[device_data.data.sensorId];
+        if(sensor.capabilities.type != device_data.class) {
+            sensor.capabilities.type = device_data.class;
+            sensor.capabilities.sub_type = device_data.capabilities[0];
+            sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
 
-        debugLog(devices);
-        callback(null,devices);
-    })
-
-    socket.on('add_device', function( device, callback ) {
-        debugLog('pair add_device');
-        debugLog(device);
-        callback();
-    })
+        }
+        sensor.device = device_data;
+        callback(null);
+    });
 }
 
 module.exports.renamed = function( device_data, new_name ) {
@@ -481,18 +492,21 @@ function addDeviceToSensor(node, sensor) {
 
         data_capabilities.push(sensor_capability);
     }
-
-    sensor.device = {
-        data: {
-            id: node.nodeId + '_' + sensor.sensorId,
-            nodeId: node.nodeId,
-            sensorId: sensor.sensorId,
-            sensorType: sensor.sensorType
-        },
-        name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
-        class: data_class,
-        capabilities: data_capabilities
-    };
+    debugLog(sensor);
+    if(sensor.device == null) {
+        sensor.device = {
+            data: {
+                id: node.nodeId + '_' + sensor.sensorId,
+                nodeId: node.nodeId,
+                sensorId: sensor.sensorId,
+                sensorType: sensor.sensorType
+            },
+            isAdded: false,
+            name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
+            class: data_class,
+            capabilities: data_capabilities
+        };
+    }
 }
 
 function getSensorInNode(node, message, isDeviceData) {
@@ -525,6 +539,9 @@ function getSensorInNode(node, message, isDeviceData) {
             };
 
             sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
+            if(sensor.capabilities != null) {
+                sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
+            }
 
             if(isDeviceData === true) {
                 addDeviceToSensor(node, sensor);
