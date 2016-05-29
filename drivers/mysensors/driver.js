@@ -213,13 +213,11 @@ function generateCapabilitiesFunctions() {
             }
     };
 
-    mysensorsProtocol.req_set.forEach(function(item, index) {
-        if(item.capabilities.sub_type != '') {
-            if(localCapabilities[item.capabilities.sub_type] == null) {
-                localCapabilities[item.capabilities.sub_type] = specialFunctions;
-            }
+    for(var capabilityname in deviceClasses.capabilities){
+        if(localCapabilities[capabilityname] == null) {
+            localCapabilities[capabilityname] = specialFunctions;
         }
-    });
+    }
 
     module.exports.capabilities = localCapabilities;
 }
