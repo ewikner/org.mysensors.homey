@@ -90,15 +90,15 @@ module.exports.pair = function (socket) {
 }
 
 module.exports.renamed = function( device_data, new_name ) {
-    // TODO
-    debugLog('renamed');
-    debugLog(device_data);
+    var node = nodes[device_data.nodeId];
+    var sensor = node.sensors[device_data.sensorId];
+    sensor.device.name = new_name;
 }
 
 module.exports.deleted = function( device_data ) {
-    // run when the user has deleted the device from Homey
-    debugLog('deleted');
-    debugLog(device_data);
+    var node = nodes[device_data.nodeId];
+    var sensor = node.sensors[device_data.sensorId];
+    sensor.device.isAdded = false;
 }
 
 // A user has updated settings, update the device object
