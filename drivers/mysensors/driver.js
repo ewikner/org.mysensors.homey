@@ -32,15 +32,26 @@ function startConnectionTimer() {
     
     connectionTimer = setInterval(connectToGateway, 60000);
 }
-module.exports.init = function (devices, callback) {
+module.exports.init = function (devices_data, callback) {
     debugLog('init');
     generateCapabilitiesFunctions();
-    debugLog(devices);
+    debugLog(devices_data);
 
-    devices.forEach(function(device_data) {
+    devices_data.forEach(function(device_data) {
         var node = getNodeById(device_data.nodeId);
         var sensor = getSensorInNode(node, device_data, true);
+        if(sensor.capabilities) {
+            if(device_data.class != undefined) {
+                sensor.capabilities.type = device_data.class;
+                if(device_data.capabilities != undefined) {
+                    sensor.capabilities.sub_type = device_data.capabilities[0];
+                     sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
+                }
+            }
+           
+        }
         sensor.device.isAdded = true;
+        debugLog(sensor);
     }) 
 
     connectToGateway();
@@ -62,11 +73,9 @@ module.exports.pair = function (socket) {
                 for(var sensorId in node.sensors){
                     var sensor = node.sensors[sensorId];
                     if(sensor !== undefined) {
-                        if(sensor.capabilities) {
-                            addDeviceToSensor(node, sensor);
-                            if(!sensor.device.isAdded) {
-                                devices.push(sensor.device);
-                            }
+                        addDeviceToSensor(node, sensor);
+                        if(!sensor.device.isAdded) {
+                            devices.push(sensor.device);
                         }
                     }
                 }
@@ -78,14 +87,15 @@ module.exports.pair = function (socket) {
     socket.on('addedSensor', function( device_data, callback ) {
         var node = nodes[device_data.data.nodeId];
         var sensor = node.sensors[device_data.data.sensorId];
-        if(sensor.capabilities.type != device_data.class) {
+        if(sensor.capabilities) {
             sensor.capabilities.type = device_data.class;
             sensor.capabilities.sub_type = device_data.capabilities[0];
             sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
-
         }
+
+        device_data.isAdded = true;
         sensor.device = device_data;
-        callback(null);
+        callback(null, sensor.device);
     });
 }
 
@@ -243,6 +253,30 @@ function handlePresentation(message) {
     debugLog(node);
 }
 
+function parsePayload(capabilities, value) {
+    var newValue = null;
+    var capability = deviceClasses.capabilities[capabilities];
+
+    debugLog('parsePayload');
+    debugLog(capability);
+    debugLog('value = '+value);
+    if(capability) {
+        switch(capability.type) {
+            case 'number': newValue = parseFloat(value); break;
+            case 'enum': newValue = value; break;
+            case 'boolean': 
+                if(value == 0) {
+                    newValue = false;
+                } else {
+                    newValue = true;
+                }
+                break;
+            default: newValue = value;
+        }
+    }
+    return newValue;
+}
+
 function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
     if (typeof isDeviceData === 'undefined') {
         isDeviceData = false;
@@ -265,11 +299,11 @@ function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
         debugLog(sensor);
         if(sensor.capabilities) {
             var old_payload = sensor.payload;
-            sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
+            //sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
 
             if(sensor.device) {
                 var capability = sensor.capabilities.sub_type;
-
+                sensor.payload = parsePayload(capability, message.payload);
                 debugLog('capability: ' + capability + ' payload: '+sensor.payload)
                 module.exports.realtime(sensor.device.data, capability, sensor.payload, function(err, success) {
                     if (err) {
@@ -497,7 +531,9 @@ function addDeviceToSensor(node, sensor) {
                 id: node.nodeId + '_' + sensor.sensorId,
                 nodeId: node.nodeId,
                 sensorId: sensor.sensorId,
-                sensorType: sensor.sensorType
+                sensorType: sensor.sensorType,
+                class: data_class,
+                capabilities: data_capabilities
             },
             isAdded: false,
             name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,

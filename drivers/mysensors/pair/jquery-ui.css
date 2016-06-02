@@ -580,8 +580,12 @@ body .ui-tooltip {
 	border-radius: 8px;
 }
 
-.mys-fontsize { font-size: 62.5%; }
+
 .mys-label, .mys-input { display:block; }
 .mys-input.input.text { margin-bottom:12px; width:95%; padding: .4em; }
-.mys-fieldset { padding:0; border:0; margin-top:25px; }
+.mys-fieldset { padding:0; border:0; margin-top:10px; }
 .ui-dialog .ui-state-error { padding: .3em; }
+.mys-error { border: 1px solid transparent; padding: 0.3em; }
+.mys-div {padding: 4px;}
+.mys-fontsize { font-size: 15px; }
+

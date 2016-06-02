@@ -110,20 +110,6 @@ exports.getCapabilities = function(inputStr) {
     return capabilities;
 }
 
-exports.parsePayload = function(type_type, value) {
-    switch(type_type) {
-        case 'number': return parseFloat(value); break;
-        case 'boolean': 
-            if(value == 0) {
-                return false;
-            } else {
-                return true;
-            }
-            break;
-        default: return value;
-    }
-}
-
 exports.types = [
     {'id': '0', 'value': 'presentation'},
     {'id': '1', 'value': 'set'},

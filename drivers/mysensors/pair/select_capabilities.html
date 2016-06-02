@@ -18,6 +18,11 @@
 			$( "#capabilities_subtype" ).empty();
 			$( "#capabilities_class" ).empty();
 
+			$( "#capabilities_class" ).append($("<option></option>")
+					.attr("value",'0')
+					.text('- Select device type -')
+					.data('children', new Array()));
+
 			$.each(capabilitiesArray, function(key, value) {   
 				$( "#capabilities_class" ).append($("<option></option>")
 					.attr("value",value.id)
@@ -26,28 +31,46 @@
 			});
 		}
 
+		function showError( msg ) {
+	      $( ".mys-error" )
+	        .text( msg )
+	        .addClass( "ui-state-highlight" );
+	      setTimeout(function() {
+	        $( ".mys-error" ).removeClass( "ui-state-highlight", 1500 );
+	      }, 500 );
+	    }
+
 		function saveChanges() {
 			selectedSensor.name = $( "#name" ).val();
 			selectedSensor.class = $( "#capabilities_class" ).val();
 			selectedSensor.capabilities[0] = $( "#capabilities_subtype" ).val();
 
-			selectedSensor.isAdded = true;
-
-			Homey.emit( 'addedSensor', selectedSensor, function( err, result ){
-			    Homey.addDevice(selectedSensor, function(){
-			    	init();
-			    	dialog.dialog( "close" );
+			if((selectedSensor.class != 0) && (selectedSensor.class != '')) {
+				Homey.emit( 'addedSensor', selectedSensor, function( err, sensor_device ){
+					if(err == null) {
+					    Homey.addDevice(sensor_device, function(){
+					    	init();
+					    	dialog.dialog( "close" );
+						});
+					}
 				});
-			});
-
-			return true;
+				return true;
+			} else {
+				showError('You need to select a driver type!');
+				$( "#capabilities_class" ).addClass( "ui-state-error" );
+			}
+			
+			return false;
 		}
-
+		console.log('views');
+		console.log($("#views"));
 		dialog = $( "#mysensor-form" ).dialog({
 			autoOpen: false,
 			modal: true,
 			draggable: false,
 			resizable: false,
+			width: ($("#views").width()-60),
+			height: ($("#views").height()-60),
 			buttons: {
 				"Save": saveChanges,
 				Cancel: function() {
@@ -55,6 +78,7 @@
 				}
 			},
 			close: function() {
+				$( "#capabilities_class" ).removeClass( "ui-state-error" );
 				form[ 0 ].reset();
 			}
 		});
@@ -67,9 +91,11 @@
 		});
 
 		$( "#capabilities_class" ).on( "change", function() {
+			$( "#capabilities_class" ).removeClass( "ui-state-error" );
 			var selectedClass = $( "#capabilities_class" ).find(":selected");
 			var selectedChildren = selectedClass.data('children');
 			$( "#capabilities_subtype" ).empty();
+
 			$.each(selectedChildren, function(key, value) {
 				$( "#capabilities_subtype" ).append($("<option></option>").attr("value",value).text(value));
 			});
@@ -77,13 +103,16 @@
 
 		function onClickLi(row) {
 			selectedSensor = $(row).data('data');
-
 			$( "#name" ).val(selectedSensor.name);
-			$( "#capabilities_class" ).val(selectedSensor.class);
-			$( "#capabilities_class" ).trigger('change');
 
-			$( "#capabilities_subtype" ).val(selectedSensor.capabilities[0]);
-			
+			if(selectedSensor.class != '') {
+				$( "#capabilities_class" ).val(selectedSensor.class);
+				$( "#capabilities_class" ).trigger('change');
+				if(selectedSensor.capabilities) {
+					$( "#capabilities_subtype" ).val(selectedSensor.capabilities[0]);
+				}
+			}
+
 			dialog.dialog( "open" );
 		}
 
@@ -124,15 +153,22 @@
 </head>
 <body>
 <div id="sensors_list"></div>
-<div id="mysensor-form" class="mys-fontsize">
+<div id="mysensor-form">
+  <p id="error_msg" class="mys-error"></p>
   <form>
     <fieldset class="mys-fieldset">
-      <label for="name" class="mys-label">Name</label>
-      <input type="text" name="name" id="name" value="" class="mys-fontsize mys-input ui-widget-content ui-corner-all">
-      <label for="capabilities_class" class="mys-label">Change device type</label>
-      <select id="capabilities_class" class="ui-menu"></select>
-      <label for="capabilities_subtype" class="mys-label">Change capability</label>
-      <select id="capabilities_subtype" class="ui-menu"></select>
+    <div class="mys-div">
+      <label for="name" class="title mys-fontsize">Name</label>
+      <input type="text" name="name" id="name" value="" class="title mys-input ui-widget-content ui-corner-all mys-fontsize">
+      </div>
+      <div class="mys-div">
+      <label for="capabilities_class" class="title mys-fontsize">Change device type</label>
+      <select id="capabilities_class" class="ui-menu title mys-fontsize"></select>
+      </div>
+      <div class="mys-div">
+      <label for="capabilities_subtype" class="title mys-fontsize ">Change capability</label>
+      <select id="capabilities_subtype" class="ui-menu title mys-fontsize"></select>
+      </div>
 
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
