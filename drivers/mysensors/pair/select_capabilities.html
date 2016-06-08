@@ -76,8 +76,6 @@
 			
 			return false;
 		}
-		console.log('views');
-		console.log($("#views"));
 
 		function closeModal() {
 			$( "#name" ).val('');
@@ -94,12 +92,11 @@
 			$( "#capabilities_subtype" ).empty();
 			$( "#capabilities_subtype" ).val('');
 
-			var has_subtype = false;
 			$.each(selectedChildren, function(key, value) {
 				$( "#capabilities_subtype" ).append($("<option></option>").attr("value",value).text(value));
-				has_subtype = true;
 			});
-			if(!has_subtype) {
+
+			if(selectedChildren.length == 0) {
 				$( "#capabilities_subtype" ).attr('disabled', true);
 			} else {
 				$( "#capabilities_subtype" ).removeAttr('disabled');
