@@ -2,14 +2,29 @@
 <html>
 <head>
 	<meta charset="utf-8">
-    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
-    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.ui.js"></script>
-    <link rel="stylesheet" href="jquery-ui.css">
-	<link rel="stylesheet" href="/manager/webserver/assets/font/fontawesome/fontawesome.css">
+    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+    .icon-mys {
+	    background-image: url("/app/org.mysensors.homey/drivers/mysensors/assets/icon.svg");
+	    display: inline-block;
+	    vertical-align: middle;
+	    width: 2em;
+	    height: 2em;
+	    margin-right: .15em;
+	}
+	.label_padding {
+		display: inline-block;
+	    vertical-align: middle;
+	    border-left: 1px solid rgba(0,0,0,0.05);
+	    font-size: .9em;
+	    text-shadow: 0 1px 0 white;
+	    padding-left: .5em;
+	}
+    </style>
 	<script type="text/javascript">
 		Homey.setTitle('Add your sensor');
 
-		var dialog, form;
 		var selectedSensor = null;
 		var devices = null;
 		var capabilitiesArray = new Array();
@@ -32,12 +47,11 @@
 		}
 
 		function showError( msg ) {
-	      $( ".mys-error" )
-	        .text( msg )
-	        .addClass( "ui-state-highlight" );
+	      $( "#error_msg" )
+	        .text( msg ).show();
 	      setTimeout(function() {
-	        $( ".mys-error" ).removeClass( "ui-state-highlight", 1500 );
-	      }, 500 );
+	        $( "#error_msg" ).hide();
+	      }, 2000 );
 	    }
 
 		function saveChanges() {
@@ -50,7 +64,7 @@
 					if(err == null) {
 					    Homey.addDevice(sensor_device, function(){
 					    	init();
-					    	dialog.dialog( "close" );
+					    	$( "#mysensor-form" ).modal("hide");
 						});
 					}
 				});
@@ -64,41 +78,32 @@
 		}
 		console.log('views');
 		console.log($("#views"));
-		dialog = $( "#mysensor-form" ).dialog({
-			autoOpen: false,
-			modal: true,
-			draggable: false,
-			resizable: false,
-			width: ($("#views").width()-60),
-			height: ($("#views").height()-60),
-			buttons: {
-				"Save": saveChanges,
-				Cancel: function() {
-					dialog.dialog( "close" );
-				}
-			},
-			close: function() {
-				$( "#capabilities_class" ).removeClass( "ui-state-error" );
-				form[ 0 ].reset();
-			}
-		});
 
-		$(".ui-dialog-titlebar").hide();
+		function closeModal() {
+			$( "#name" ).val('');
+			$( "#capabilities_class" ).val('');
+			$( "#capabilities_class" ).val('');
 
-		form = dialog.find( "form" ).on( "submit", function( event ) {
-			event.preventDefault();
-			saveChanges();
-		});
+			$( "#mysensor-form" ).modal("hide");
+		}
 
 		$( "#capabilities_class" ).on( "change", function() {
 			$( "#capabilities_class" ).removeClass( "ui-state-error" );
 			var selectedClass = $( "#capabilities_class" ).find(":selected");
 			var selectedChildren = selectedClass.data('children');
 			$( "#capabilities_subtype" ).empty();
+			$( "#capabilities_subtype" ).val('');
 
+			var has_subtype = false;
 			$.each(selectedChildren, function(key, value) {
 				$( "#capabilities_subtype" ).append($("<option></option>").attr("value",value).text(value));
+				has_subtype = true;
 			});
+			if(!has_subtype) {
+				$( "#capabilities_subtype" ).attr('disabled', true);
+			} else {
+				$( "#capabilities_subtype" ).removeAttr('disabled');
+			}
 		});
 
 		function onClickLi(row) {
@@ -113,20 +118,16 @@
 				}
 			}
 
-			dialog.dialog( "open" );
+			$( "#mysensor-form" ).modal("show");
 		}
 
 		function listDevices() {
-			$("#sensors_list").append("<ul></ul>");
 			var iconPath = '/app/org.mysensors.homey/drivers/mysensors/assets/icon.svg';
 
 			$.each(devices, function(i,v) {
-				var row = $('<label>').attr('for','sensor-'+ v.data.id).append(
-							$('<div>').attr('class','overlay'),
-							$('<span>').attr('class','icon').attr('style','-webkit-mask-image: url('+iconPath+')'),
-							$('<input>').attr('class','name').attr('value',v.name).attr('tabindex','-1'));
-
-				$("ul").append($('<li>').attr('class','device').attr('onclick','onClickLi(this)').append(row).data('data',v));
+				var img = $('<span>').attr('class','glyphicon icon-mys').append("");
+				var label = $('<span>').attr('class','label_padding').append(v.name);
+				$("#sensors_list").append($('<a>').attr('class','list-group-item').attr('onclick','onClickLi(this)').append(img, label).data('data',v));
 			});
 		}
 		function init() {
@@ -147,33 +148,42 @@
 				}
 			});
 		}
-
+		$( "#mysensor-form" ).modal("hide");
+		$( "#error_msg" ).hide();
 		init();
 	</script>
 </head>
 <body>
-<div id="sensors_list"></div>
-<div id="mysensor-form">
-  <p id="error_msg" class="mys-error"></p>
-  <form>
-    <fieldset class="mys-fieldset">
-    <div class="mys-div">
-      <label for="name" class="title mys-fontsize">Name</label>
-      <input type="text" name="name" id="name" value="" class="title mys-input ui-widget-content ui-corner-all mys-fontsize">
-      </div>
-      <div class="mys-div">
-      <label for="capabilities_class" class="title mys-fontsize">Change device type</label>
-      <select id="capabilities_class" class="ui-menu title mys-fontsize"></select>
-      </div>
-      <div class="mys-div">
-      <label for="capabilities_subtype" class="title mys-fontsize ">Change capability</label>
-      <select id="capabilities_subtype" class="ui-menu title mys-fontsize"></select>
-      </div>
+<div id="sensors_list" class="list-group"></div>
 
-      <!-- Allow form submission with keyboard without duplicating the dialog button -->
-      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
-    </fieldset>
-  </form>
+<div id="mysensor-form" class="modal fade" role="dialog">
+<div class="modal-dialog">
+	<div class="modal-content">
+		<div class="modal-body">
+			<div id="error_msg" class="alert alert-danger"></div>
+			<form>
+		    	<div class="form-group">
+				<label for="name" >Name</label>
+				<input type="text" name="name" id="name" value="" class="form-control">
+				</div>
+				<div class="form-group">
+				<label for="capabilities_class">Change device type</label>
+				<select id="capabilities_class" class="form-control"></select>
+				</div>
+				<div class="form-group">
+				<label for="capabilities_subtype">Change capability</label>
+				<select id="capabilities_subtype" class="form-control"></select>
+				</div>
+		  </form>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary" onclick="saveChanges()">Save</button>
+			<button type="button" class="btn btn-default" onclick="closeModal()">Cancel</button>
+		</div>
+	</div>
+</div>
+  
+  
 </div>
 </body>
 </html>
