@@ -59,7 +59,7 @@
 			selectedSensor.class = $( "#capabilities_class" ).val();
 			selectedSensor.capabilities[0] = $( "#capabilities_subtype" ).val();
 
-			if((selectedSensor.class != 0) && (selectedSensor.class != '')) {
+			if((selectedSensor.class != 0) && (selectedSensor.class != '') && (selectedSensor.class != 'other')) {
 				Homey.emit( 'addedSensor', selectedSensor, function( err, sensor_device ){
 					if(err == null) {
 					    Homey.addDevice(sensor_device, function(){
@@ -111,8 +111,11 @@
 				$( "#capabilities_class" ).val(selectedSensor.class);
 				$( "#capabilities_class" ).trigger('change');
 				if(selectedSensor.capabilities) {
+					$( "#capabilities_subtype" ).removeAttr('disabled');
 					$( "#capabilities_subtype" ).val(selectedSensor.capabilities[0]);
 				}
+			} else {
+				$( "#capabilities_subtype" ).attr('disabled', true);
 			}
 
 			$( "#mysensor-form" ).modal("show");
