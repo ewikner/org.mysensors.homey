@@ -92,26 +92,35 @@
             <input type="radio" id="gw-ethernet" ng-model="settings.gatewayType" value="ethernet">
             <label for="gw-ethernet" data-i18n="settings.form.gatewayType_ethernet"></label>
         </div>
-        <div class="field row">
-              <label for="host" data-i18n="settings.form.host"></label>
-              <input id="host" ng-model="settings.host" placeholder="0.0.0.0" required />
-          </div>
-          <div class="field row">
-              <label for="port" data-i18n="settings.form.port"></label>
-              <input id="port" ng-model="settings.port" placeholder="1883" required />
-          </div>
+        
         <div ng-switch="settings.gatewayType">
           <div ng-switch-when="mqtt">
-             <div class="field row">
-                <label for="subscribe_topic" data-i18n="settings.form.subscribe_topic"></label>
-                <input id="subscribe_topic" ng-model="settings.subscribe_topic" placeholder="mygateway1-in" />
+            <div class="field row">
+              <label for="mqtt_host" data-i18n="settings.form.mqtt_host"></label>
+              <input id="mqtt_host" ng-model="settings.mqtt_host" placeholder="0.0.0.0" required />
             </div>
             <div class="field row">
-                <label for="publish_topic" data-i18n="settings.form.publish_topic"></label>
-                <input id="publish_topic" ng-model="settings.publish_topic" placeholder="mygateway1-out" />
+              <label for="mqtt_port" data-i18n="settings.form.mqtt_port"></label>
+              <input id="mqtt_port" ng-model="settings.mqtt_port" placeholder="1883" required />
+            </div>  
+            <div class="field row">
+              <label for="subscribe_topic" data-i18n="settings.form.subscribe_topic"></label>
+              <input id="subscribe_topic" ng-model="settings.subscribe_topic" placeholder="mygateway1-out" />
+            </div>
+            <div class="field row">
+              <label for="publish_topic" data-i18n="settings.form.publish_topic"></label>
+              <input id="publish_topic" ng-model="settings.publish_topic" placeholder="mygateway1-in" />
             </div>
           </div>
           <div ng-switch-when="ethernet">
+            <div class="field row">
+              <label for="ethernet_host" data-i18n="settings.form.ethernet_host"></label>
+              <input id="ethernet_host" ng-model="settings.ethernet_host" placeholder="0.0.0.0" required />
+            </div>
+            <div class="field row">
+              <label for="ethernet_port" data-i18n="settings.form.ethernet_port"></label>
+              <input id="ethernet_port" ng-model="settings.ethernet_port" placeholder="5003" required />
+            </div> 
              <div class="field row">
                 <label for="timeout" data-i18n="settings.form.timeout"></label>
                 <input id="timeout" ng-model="settings.timeout" placeholder="60000" ng-pattern="/^\d+$/"/>

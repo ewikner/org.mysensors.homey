@@ -1,6 +1,6 @@
 {
     "id": "org.mysensors.homey",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "compatibility": "0.x || 1.x",
     "name": {
         "en": "Mysensors.org"
@@ -8,13 +8,14 @@
     "description": {
         "en": "Mysensors.org app to Homey"
     },
+    "category": ["climate","appliances", "lights"],
     "author": {
         "name": "Erik Wikner",
         "email": "erik.wikner@gmail.com"
     },
     "images": {
-        "large": "assets/images/large.jpg",
-        "small": "assets/images/small.jpg"
+        "large": "assets/images/large.png",
+        "small": "assets/images/small.png"
     },
     "drivers": [
         {
@@ -23,25 +24,14 @@
                 "en": "Mysensors Driver"
             },
             "images": {
-                "large": "./drivers/mysensors/assets/images/large.jpg",
-                "small": "./drivers/mysensors/assets/images/small.jpg"
+                "large": "./drivers/mysensors/assets/images/large.png",
+                "small": "./drivers/mysensors/assets/images/small.png"
             },
-            "class": "sensor",
-            "capabilities": [ 
-                "measure_temperature", 
-                "measure_humidity" 
-            ],
+            "class": "",
+            "capabilities": [],
             "pair": [
                 {
-                    "id": "list_my_devices",
-                    "template": "list_devices",
-                    "navigation": {
-                        "next": "add_my_devices"
-                    }
-                },
-                {
-                    "id": "add_my_devices",
-                    "template": "add_devices"
+                    "id": "select_capabilities"
                 }
             ]
         }
@@ -49,20 +39,196 @@
     "flow": {
         "triggers": [
             {
-                "id": "last_temperature",
+                "id": "value_changed",
                 "title": {
-                    "en": "New temperature value"
+                    "en": "Value has changed"
                 },
-                "tokens":[
-                  {
-                    "name":"temp",
-                    "title": {
-                      "en":"Temperature"
-                    },
-                    "example":{
-                      "en":"In degree celcius"
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
                     }
-                  }
+                ],
+                "tokens": [
+                    {
+                        "name": "current_value",
+                        "title": { 
+                            "en": "Value"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "value_on",
+                "title": {
+                    "en": "Value is On"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    }
+                ],
+                "tokens": [
+                    {
+                        "name": "current_value",
+                        "title": { 
+                            "en": "Value"
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "value_off",
+                "title": {
+                    "en": "Value is Off"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    }
+                ],
+                "tokens": [
+                    {
+                        "name": "current_value",
+                        "title": { 
+                            "en": "Value"
+                        }
+                    }
+                ]
+            }
+        ],
+        "conditions": [
+            {
+                "id": "value_is",
+                "title": {
+                    "en": "Value is..."
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value_is",
+                        "type": "text",
+                        "placeholder": { 
+                            "en": "Value IS "
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "onoff",
+                "title": {
+                    "en": "On / Off"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value_is",
+                        "type": "dropdown",
+                        "values": [
+                            {
+                                "id": true,
+                                "label": {
+                                        "en": "On"
+                                }
+                            },
+                            {
+                                "id": false,
+                                "label": {
+                                        "en": "Off"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "actions": [
+            {
+                "id": "set_text",
+                "title": {
+                    "en": "Set text"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value",
+                        "type": "text",
+                        "placeholder": [
+                            {
+                                "en": "Value"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "set_number",
+                "title": {
+                    "en": "Set number"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value",
+                        "type": "number",
+                        "placeholder": [
+                            {
+                                "en": "Value"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "set_onoff",
+                "title": {
+                    "en": "On / Off"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "value",
+                        "type": "dropdown",
+                        "values": [
+                            {
+                                "id": 1,
+                                "label": {
+                                        "en": "On"
+                                }
+                            },
+                            {
+                                "id": 0,
+                                "label": {
+                                        "en": "Off"
+                                }
+                            }
+                        ]
+                    }
                 ]
             }
         ]
