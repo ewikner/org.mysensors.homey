@@ -40,24 +40,39 @@ module.exports.init = function (devices_data, callback) {
     devices_data.forEach(function(device_data) {
         var node = getNodeById(device_data.nodeId);
         var sensor = getSensorInNode(node, device_data, true);
-        if(sensor.capabilities) {
-            if(device_data.class != undefined) {
-                sensor.capabilities.type = device_data.class;
-                if(device_data.capabilities != undefined) {
-                    sensor.capabilities.sub_type = device_data.capabilities[0];
-                     sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
-                }
-            }
-           
-        }
-        sensor.device.isAdded = true;
-        debugLog(sensor);
+
+        getDeviceInfo(sensor, function(err) {
+            sensor.device.isAdded = true;
+        });
     }) 
 
     connectToGateway();
     createFlowListener();
 
     callback()
+}
+
+function getDeviceInfo(sensor, callback) {
+    module.exports.getName( sensor.device.data, function( err, data) {
+        sensor.device.name = data;
+        module.exports.getClass( sensor.device.data, function( err, data) {
+            sensor.device.class = data;
+
+            module.exports.getCapabilities( sensor.device.data, function(err, data) {
+                var capa = data[0];
+                var capability = {};
+                capability.type = sensor.device.class;
+                capability.sub_type = capa.id;
+                capability.parse_value = deviceClasses.capabilities[capability.sub_type].type;
+                sensor.device.capabilities = [];
+                sensor.device.capabilities.push(capability.sub_type);
+
+                sensor.capabilities = capability;
+
+                callback(null);
+            })
+        })
+    })
 }
 
 // Pairing functionality
@@ -95,6 +110,9 @@ module.exports.pair = function (socket) {
 
         device_data.isAdded = true;
         sensor.device = device_data;
+        debugLog('addedSensor');
+        debugLog(sensor);
+
         callback(null, sensor.device);
     });
 }
@@ -256,9 +274,6 @@ function handlePresentation(message) {
 function parsePayload(capabilities, value) {
     var newValue = null;
     var capability = deviceClasses.capabilities[capabilities];
-
-    debugLog('parsePayload');
-    debugLog(capability);
     debugLog('value = '+value);
     if(capability) {
         switch(capability.type) {
@@ -274,6 +289,7 @@ function parsePayload(capabilities, value) {
             default: newValue = value;
         }
     }
+    debugLog('return value = '+newValue);
     return newValue;
 }
 
@@ -299,7 +315,6 @@ function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
         debugLog(sensor);
         if(sensor.capabilities) {
             var old_payload = sensor.payload;
-            //sensor.payload = mysensorsProtocol.parsePayload(sensor.capabilities.parse_value, message.payload);
 
             if(sensor.device) {
                 var capability = sensor.capabilities.sub_type;
@@ -331,6 +346,7 @@ function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
                             break;
                     }
                 }
+
                 if(sendSetData) {
                     sendData({
                         nodeId: node.nodeId,
@@ -531,9 +547,7 @@ function addDeviceToSensor(node, sensor) {
                 id: node.nodeId + '_' + sensor.sensorId,
                 nodeId: node.nodeId,
                 sensorId: sensor.sensorId,
-                sensorType: sensor.sensorType,
-                class: data_class,
-                capabilities: data_capabilities
+                sensorType: sensor.sensorType
             },
             isAdded: false,
             name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,

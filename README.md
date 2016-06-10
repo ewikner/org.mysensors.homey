@@ -25,7 +25,7 @@ You can then set a new name and you need to choose why type of sensor it is (dev
 It is Homey that need to know the device type and capability to be able to present the device correct.
 ![Settings](http://homey.morewi.se/mysensors/mysensors_app_adddevice_3.png)
 
-This is becouse the user can use the same sensor type to diffrent things.
+This is because the user can use the same sensor type to diffrent things.
 ex. V_TRIPPED can be use as Door and window sensors, Motion sensors and Smoke sensor and some other.
 
 ### Flows
@@ -56,6 +56,7 @@ The following actions are available:
     You can set the value to on/off
 
 ### Version history
+* 0.1.0 App store release
 
 ### Donate
 This is an open source application and totaly free. 
