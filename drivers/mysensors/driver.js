@@ -59,17 +59,20 @@ function getDeviceInfo(sensor, callback) {
             sensor.device.class = data;
 
             module.exports.getCapabilities( sensor.device.data, function(err, data) {
-                var capa = data[0];
-                var capability = {};
-                capability.type = sensor.device.class;
-                capability.sub_type = capa.id;
-                capability.parse_value = deviceClasses.capabilities[capability.sub_type].type;
-                sensor.device.capabilities = [];
-                sensor.device.capabilities.push(capability.sub_type);
+                if(data !== undefined) {
+                    data.forEach(function(capa) {
+                        var capability = {};
+                        capability.type = sensor.device.class;
+                        capability.sub_type = capa.id;
+                        capability.parse_value = deviceClasses.capabilities[capability.sub_type].type;
+                        sensor.device.capabilities = [];
+                        sensor.device.capabilities.push(capability.sub_type);
 
-                sensor.capabilities = capability;
+                        sensor.capabilities = capability;
 
-                callback(null);
+                        callback(null);
+                    })
+                }
             })
         })
     })
