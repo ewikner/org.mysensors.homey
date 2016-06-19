@@ -56,6 +56,8 @@ The following actions are available:
     You can set the value to on/off
 
 ### Version history
+* 0.1.2 Added measure_ultraviolet capability and default timeout value for ethernet gateway
+* 0.1.1 Bugfix
 * 0.1.0 App store release
 
 ### Donate

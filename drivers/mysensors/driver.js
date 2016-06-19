@@ -672,7 +672,9 @@ function connectToGateway() {
             gwSplitChar = ';';
             gwClient = net.Socket();
             gwClient.connect(settings.ethernet_port, settings.ethernet_host);
-
+            if(settings.timeout === undefined) {
+                settings.timeout = 60000;
+            }
             gwClient.setEncoding('ascii');
             gwClient.setTimeout(parseInt(settings.timeout));
             gwClient.on('connect', function() {
