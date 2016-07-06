@@ -8,6 +8,7 @@ var nodes = {};
 var gwClient = null;
 var gwIsConnected = false;
 var connectionTimer = null;
+var discoverTimer = null;
 var settings = {};
 
 const FIRMWARE_BLOCK_SIZE = 16;
@@ -32,6 +33,27 @@ function startConnectionTimer() {
     
     connectionTimer = setInterval(connectToGateway, 60000);
 }
+
+function startDiscoverTimer() {
+    if(discoverTimer !== null) {
+        clearInterval(discoverTimer);
+    }
+
+    discoverTimer = setInterval(sendDiscoverMessage, 3600000);
+}
+
+function sendDiscoverMessage() {
+    debugLog("sendDiscoverMessage")
+    sendData({
+        nodeId: BROADCAST_ADDRESS,
+        sensorId: NODE_SENSOR_ID,
+        messageType: 'internal',
+        ack: 0,
+        subType: 'I_DISCOVER',
+        payload: '0'
+    });
+}
+
 module.exports.init = function (devices_data, callback) {
     debugLog('init');
     generateCapabilitiesFunctions();
@@ -115,6 +137,16 @@ module.exports.pair = function (socket) {
         sensor.device = device_data;
         debugLog('addedSensor');
         debugLog(sensor);
+
+        if(sensor.payload != '') {
+            var messageObj = {
+                nodeId: node.nodeId,
+                sensorId: sensor.sensorId,
+                subType: sensor.payloadType,
+                payload: sensor.payload
+            };
+            handleSet(messageObj, false, false, false);
+        }
 
         callback(null, sensor.device);
     });
@@ -314,11 +346,11 @@ function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
     if(sensor != null) {
         sensor.payloadType = message.subType;
         sensor.time = Date.now();
+        var old_payload = sensor.payload;
+        sensor.payload = message.payload;
 
         debugLog(sensor);
         if(sensor.capabilities) {
-            var old_payload = sensor.payload;
-
             if(sensor.device) {
                 var capability = sensor.capabilities.sub_type;
                 sensor.payload = parsePayload(capability, message.payload);
@@ -636,6 +668,8 @@ function connectToGateway() {
                     debugLog('MQTT connected');
                     gwClient.subscribe(topicPublish + '/#');
                     gwClient.subscribe(topicSubscribe + '/#');
+                    sendDiscoverMessage();
+                    startDiscoverTimer();
                 }
               
             }).on('message', function (topic, data) {
@@ -681,6 +715,9 @@ function connectToGateway() {
                 clearInterval(connectionTimer);
                 gwIsConnected = true;
                 debugLog('Ethernet connected');
+                sendDiscoverMessage();
+                startDiscoverTimer();
+                
             }).on('data', function(data) {
                 var dataArr = data.split('\n');
                 dataArr.forEach(function(data_str, index) {
