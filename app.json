@@ -1,6 +1,6 @@
 {
     "id": "org.mysensors.homey",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "compatibility": "0.x || 1.x",
     "name": {
         "en": "Mysensors.org"
@@ -17,6 +17,16 @@
         "large": "assets/images/large.png",
         "small": "assets/images/small.png"
     },
+    "capabilities": {
+        "mysensors_custom": {
+            "type": "string",
+            "title": {
+                "en": "Custom"
+            },
+            "getable": true,
+            "setable": true
+        }
+    },
     "drivers": [
         {
             "id": "mysensors",
@@ -29,6 +39,18 @@
             },
             "class": "",
             "capabilities": [],
+            "mobile": {
+                "components": [
+                    {
+                        "id": "icon",
+                        "capabilities": []
+                    },
+                    {
+                        "id": "sensor",
+                        "capabilities": [ "mysensors_custom" ]
+                    }
+                ]
+            },
             "pair": [
                 {
                     "id": "select_capabilities"
