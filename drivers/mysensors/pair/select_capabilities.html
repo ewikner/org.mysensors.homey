@@ -59,7 +59,7 @@
 			selectedSensor.class = $( "#capabilities_class" ).val();
 			selectedSensor.capabilities[0] = $( "#capabilities_subtype" ).val();
 
-			if((selectedSensor.class != 0) && (selectedSensor.class != '') && (selectedSensor.class != 'other')) {
+			if((selectedSensor.class != 0) && (selectedSensor.class != '')) {
 				Homey.emit( 'addedSensor', selectedSensor, function( err, sensor_device ){
 					if(err == null) {
 					    Homey.addDevice(sensor_device, function(){

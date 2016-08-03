@@ -1,6 +1,6 @@
 {
   "name": "homeymysensors",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "App for mysensors.org",
   "main": "app.js",
   "dependencies": {

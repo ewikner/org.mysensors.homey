@@ -473,6 +473,11 @@ function handleInternal(message) {
         case 'I_DISCOVER_RESPONSE': break;
         case 'I_HEARTBEAT_RESPONSE': break;
         case 'I_LOCKED': break;
+        case 'I_PING': break;
+        case 'I_PONG': break;
+        case 'I_REGISTRATION_REQUEST': break;
+        case 'I_REGISTRATION_RESPONSE': break;
+        case 'I_DEBUG': break;
     }
 }
 
@@ -572,9 +577,9 @@ function addDeviceToSensor(node, sensor) {
 
         var sensor_capability = sensor.capabilities.sub_type;
         data_class = sensor.capabilities.type;
-
         data_capabilities.push(sensor_capability);
     }
+    
     debugLog(sensor);
     if(sensor.device == null) {
         sensor.device = {

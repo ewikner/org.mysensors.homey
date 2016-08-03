@@ -137,7 +137,7 @@ exports.presentation = [
     {'id': '15', 'value': 'S_DISTANCE',             'variables': ['V_DISTANCE', 'V_UNIT_PREFIX']},
     {'id': '16', 'value': 'S_LIGHT_LEVEL',          'variables': ['V_LIGHT_LEVEL', 'V_LEVEL']},
     {'id': '17', 'value': 'S_ARDUINO_NODE',         'variables': []},
-    {'id': '18', 'value': 'S_ARDUINO_RELAY',        'variables': []},
+    {'id': '18', 'value': 'S_ARDUINO_REPEATER_NODE','variables': []},
     {'id': '19', 'value': 'S_LOCK',                 'variables': ['V_LOCK_STATUS']},
     {'id': '20', 'value': 'S_IR',                   'variables': ['V_IR_SEND', 'V_IR_RECEIVE']},
     {'id': '21', 'value': 'S_WATER',                'variables': ['V_FLOW', 'V_VOLUME']},
@@ -155,10 +155,10 @@ exports.presentation = [
     {'id': '33', 'value': 'S_SOUND',                'variables': ['V_LEVEL', 'V_TRIPPED', 'V_ARMED']},
     {'id': '34', 'value': 'S_VIBRATION',            'variables': ['V_LEVEL', 'V_TRIPPED', 'V_ARMED']},
     {'id': '35', 'value': 'S_MOISTURE',             'variables': ['V_LEVEL', 'V_TRIPPED', 'V_ARMED']},
-    {'id': '36', 'value': 'S_INFO',                 'variables': []},
-    {'id': '37', 'value': 'S_GAS',                  'variables': []},
-    {'id': '38', 'value': 'S_BATTERY',              'variables': []},
-    {'id': '39', 'value': 'S_WATER_QUALITY',        'variables': []}
+    {'id': '36', 'value': 'S_INFO',                 'variables': ['V_TEXT']},
+    {'id': '37', 'value': 'S_GAS',                  'variables': ['V_FLOW', 'V_VOLUME']},
+    {'id': '38', 'value': 'S_GPS',                  'variables': ['V_POSITION']},
+    {'id': '39', 'value': 'S_WATER_QUALITY',        'variables': ['V_TEMP', 'V_PH', 'V_ORP', 'V_EC', 'V_STATUS']}
 ];
 
 exports.req_set = [
@@ -186,11 +186,11 @@ exports.req_set = [
     {'id': '21', 'value': 'V_HVAC_FLOW_STATE',      'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
     {'id': '22', 'value': 'V_HVAC_SPEED',           'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '23', 'value': 'V_LIGHT_LEVEL',          'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'number'}},
-    {'id': '24', 'value': 'V_VAR1',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '25', 'value': 'V_VAR2',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '26', 'value': 'V_VAR3',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '27', 'value': 'V_VAR4',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '28', 'value': 'V_VAR5',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '24', 'value': 'V_VAR1',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
+    {'id': '25', 'value': 'V_VAR2',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
+    {'id': '26', 'value': 'V_VAR3',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
+    {'id': '27', 'value': 'V_VAR4',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
+    {'id': '28', 'value': 'V_VAR5',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
     {'id': '29', 'value': 'V_UP',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '30', 'value': 'V_DOWN',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '31', 'value': 'V_STOP',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
@@ -209,13 +209,16 @@ exports.req_set = [
     {'id': '44', 'value': 'V_HVAC_SETPOINT_COOL',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
     {'id': '45', 'value': 'V_HVAC_SETPOINT_HEAT',   'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
     {'id': '46', 'value': 'V_HVAC_FLOW_MODE',       'capabilities': {'type': 'sensor', 'sub_type': 'measure_temperature', 'parse_value': 'number'}},
-    {'id': '47', 'value': 'V_TEXT',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '48', 'value': 'V_CUSTOM',               'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '47', 'value': 'V_TEXT',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
+    {'id': '48', 'value': 'V_CUSTOM',               'capabilities': {'type': 'other', 'sub_type': 'mysensors_custom', 'parse_value': ''}},
     {'id': '49', 'value': 'V_POSITION',             'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '50', 'value': 'V_IR_RECORD',            'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '51', 'value': 'V_PH',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '52', 'value': 'V_ORP',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '53', 'value': 'V_EC',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}}
+    {'id': '53', 'value': 'V_EC',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '54', 'value': 'V_VAR',                  'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '55', 'value': 'V_VA',                   'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
+    {'id': '56', 'value': 'V_POWER_FACTOR',         'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}}
 ];
 
 exports.internal = [
@@ -242,7 +245,12 @@ exports.internal = [
     {'id': '20', 'value': 'I_DISCOVER'},
     {'id': '21', 'value': 'I_DISCOVER_RESPONSE'},
     {'id': '22', 'value': 'I_HEARTBEAT_RESPONSE'},
-    {'id': '23', 'value': 'I_LOCKED'}
+    {'id': '23', 'value': 'I_LOCKED'},
+    {'id': '24', 'value': 'I_PING'},
+    {'id': '25', 'value': 'I_PONG'},
+    {'id': '26', 'value': 'I_REGISTRATION_REQUEST'},
+    {'id': '27', 'value': 'I_REGISTRATION_RESPONSE'},
+    {'id': '28', 'value': 'I_DEBUG'}
 ];
 
 exports.stream = [
