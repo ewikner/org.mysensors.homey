@@ -5,7 +5,7 @@
 			"name": {
 				"en": "Other"
 			},
-			"capabilities": [ "mysensors_custom" ]
+			"capabilities": [ "mysensors_custom", "mysensors_number", "mysensors_boolean"]
 		},
 
 		"socket": {
@@ -146,6 +146,23 @@
 			"getable": true,
 			"setable": true
 		},
+		"mysensors_number": {
+            "type": "number",
+            "title": {
+                "en": "Custom number"
+            },
+            "decimals": 2,
+            "getable": true,
+            "setable": true
+        },
+        "mysensors_boolean": {
+            "type": "boolean",
+            "title": {
+                "en": "Custom boolean"
+            },
+            "getable": true,
+            "setable": true
+        },
 		"onoff": {
 			"type": "boolean",
 			"title": {
