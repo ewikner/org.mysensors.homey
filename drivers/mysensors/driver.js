@@ -595,6 +595,25 @@ function addDeviceToSensor(node, sensor) {
             capabilities: data_capabilities
         };
     }
+    
+    if(data_class == 'other') {
+        sensor.device.mobile = {
+            "components": [
+                {
+                    "id": "icon",
+                    "capabilities": []
+                },
+                {
+                    "id": "sensor",
+                    "capabilities": [
+                        "mysensors_custom",
+                        "mysensors_number",
+                        "mysensors_boolean"
+                    ]
+                }
+            ]
+        };
+    }
 }
 
 function getSensorInNode(node, message, isDeviceData) {

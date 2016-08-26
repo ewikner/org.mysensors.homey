@@ -1,6 +1,6 @@
 {
     "id": "org.mysensors.homey",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "compatibility": "0.x || 1.x",
     "name": {
         "en": "Mysensors.org"
@@ -25,6 +25,40 @@
             },
             "getable": true,
             "setable": true
+        },
+        "mysensors_number": {
+            "type": "number",
+            "title": {
+                "en": "Custom number"
+            },
+            "decimals": 2,
+            "getable": true,
+            "setable": true
+        },
+        "mysensors_boolean": {
+            "type": "boolean",
+            "title": {
+                "en": "Custom boolean"
+            },
+            "getable": true,
+            "setable": true
+        }
+    },
+    "capabilitiesOptions": {
+        "mysensors_custom": {
+            "title": {
+                "en": "Custom"
+            }
+        },
+        "mysensors_number": {
+            "title": {
+                "en": "Custom number"
+            }
+        },
+        "mysensors_boolean": {
+            "title": {
+                "en": "Custom boolean"
+            }
         }
     },
     "drivers": [
@@ -39,18 +73,6 @@
             },
             "class": "",
             "capabilities": [],
-            "mobile": {
-                "components": [
-                    {
-                        "id": "icon",
-                        "capabilities": []
-                    },
-                    {
-                        "id": "sensor",
-                        "capabilities": [ "mysensors_custom" ]
-                    }
-                ]
-            },
             "pair": [
                 {
                     "id": "select_capabilities"
