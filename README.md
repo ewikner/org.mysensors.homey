@@ -56,6 +56,7 @@ The following actions are available:
     You can set the value to on/off
 
 ### Version history
+* 0.1.5 Updates for Homey version: 0.10.0 
 * 0.1.5 Change the custom capabilities mobile to be added dynamic.
 * 0.1.4 Added a custom capabilities without parse the value.
 * 0.1.3 Fixed issue with not show a value when add the sensor as a device.Added function to send I_DISCOVER command.

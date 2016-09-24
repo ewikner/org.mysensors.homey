@@ -86,7 +86,12 @@ function getDeviceInfo(sensor, callback) {
                         var capability = {};
                         capability.type = sensor.device.class;
                         capability.sub_type = capa.id;
-                        capability.parse_value = deviceClasses.capabilities[capability.sub_type].type;
+                        capability.parse_value = '';
+                        var device_capa = deviceClasses.capabilities[capability.sub_type];
+                        if(device_capa !== undefined) {
+                            capability.parse_value = device_capa.type;
+                        }
+                        
                         sensor.device.capabilities = [];
                         sensor.device.capabilities.push(capability.sub_type);
 
@@ -130,7 +135,11 @@ module.exports.pair = function (socket) {
         if(sensor.capabilities) {
             sensor.capabilities.type = device_data.class;
             sensor.capabilities.sub_type = device_data.capabilities[0];
-            sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
+            sensor.capabilities.parse_value = '';
+            var device_capa = deviceClasses.capabilities[sensor.capabilities.sub_type];
+            if(device_capa !== undefined) {
+                sensor.capabilities.parse_value = device_capa.type;
+            }
         }
 
         device_data.isAdded = true;
@@ -647,7 +656,11 @@ function getSensorInNode(node, message, isDeviceData) {
 
             sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
             if(sensor.capabilities != null) {
-                sensor.capabilities.parse_value = deviceClasses.capabilities[sensor.capabilities.sub_type].type;
+                sensor.capabilities.parse_value = '';
+                var device_capa = deviceClasses.capabilities[sensor.capabilities.sub_type];
+                if(device_capa !== undefined) {
+                    sensor.capabilities.parse_value = device_capa.type;
+                }
             }
 
             if(isDeviceData === true) {
