@@ -85,11 +85,14 @@ function getDeviceInfo(sensor, callback) {
                     data.forEach(function(capa) {
                         var capability = {};
                         capability.type = sensor.device.class;
-                        capability.sub_type = capa.id;
+                        capability.sub_type = capa;
                         capability.parse_value = '';
                         var device_capa = deviceClasses.capabilities[capability.sub_type];
                         if(device_capa !== undefined) {
                             capability.parse_value = device_capa.type;
+                        } else {
+                            debugLog("getCapabilities is not listed in deviceClasses");
+                            debugLog(capa);
                         }
                         
                         sensor.device.capabilities = [];
