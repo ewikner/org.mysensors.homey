@@ -70,6 +70,7 @@ exports.encodeMessage = function (messageObj,splitChar, gwType) {
             messageObj.payload = '0';
             break;
     }
+    messageObj.payload = messageObj.payload.toString();
     if(gwType == 'mqtt') {
         result.message_str = encodedObj.join(splitChar);
         result.payload = messageObj.payload;
