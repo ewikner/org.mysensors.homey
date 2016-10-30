@@ -13,6 +13,14 @@
         "name": "Erik Wikner",
         "email": "erik.wikner@gmail.com"
     },
+    "contributors": {
+        "developers": [
+            {
+                "name" : "Terry Hendrix",
+                "email": "terryhendrix90@gmail.com"
+            }
+        ]
+    },
     "images": {
         "large": "assets/images/large.png",
         "small": "assets/images/small.png"
