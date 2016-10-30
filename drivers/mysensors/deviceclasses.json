@@ -61,7 +61,7 @@
 				"en": "Sensor",
 				"nl": "Sensor"
 			},
-			"capabilities": [ "measure_temperature", "measure_co", "measure_co2", "measure_humidity", "measure_pressure", "measure_noise", "measure_rain", "measure_wind_strength", "measure_wind_angle", "measure_gust_strength", "measure_gust_angle", "measure_battery", "measure_power", "measure_luminance", "measure_ultraviolet", "alarm_generic", "alarm_motion", "alarm_contact", "alarm_co", "alarm_co2", "alarm_tamper", "alarm_smoke", "alarm_fire", "alarm_heat", "alarm_water", "alarm_battery", "alarm_night", "meter_power", "meter_water", "meter_gas" ]
+			"capabilities": [ "mysensors_water_flow", "measure_temperature", "measure_co", "measure_co2", "measure_humidity", "measure_pressure", "measure_noise", "measure_rain", "measure_wind_strength", "measure_wind_angle", "measure_gust_strength", "measure_gust_angle", "measure_battery", "measure_power", "measure_luminance", "measure_ultraviolet", "alarm_generic", "alarm_motion", "alarm_contact", "alarm_co", "alarm_co2", "alarm_tamper", "alarm_smoke", "alarm_fire", "alarm_heat", "alarm_water", "alarm_battery", "alarm_night", "meter_power", "meter_water", "meter_gas" ]
 		},
 
 		"kettle": {
@@ -163,6 +163,24 @@
             "getable": true,
             "setable": true
         },
+		"mysensors_water_flow": {
+		  "type": "number",
+		  "title": {
+			"en": "Water flow",
+			"nl": "Watergebruik"
+		  },
+		  "units": {
+			"en": "L/h"
+		  },
+		  "desc": {
+			"en": "Water flow in liters per hour",
+			"nl": "Watergebruik in liters per uur"
+		  },
+		  "chartType": "stepLine",
+		  "decimals": 2,
+		  "getable": true,
+		  "setable": false
+		},
 		"onoff": {
 			"type": "boolean",
 			"title": {
