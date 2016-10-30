@@ -112,6 +112,10 @@
             "mobile": {
                 "components": [
                     {
+                        "id" : "icon",
+                        "capabilities": [ ]
+                    },
+                    {
                         "id": "sensor",
                         "capabilities": [ "mysensors_water_flow" ],
                         "options": {
