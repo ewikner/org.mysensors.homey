@@ -620,8 +620,14 @@ function addDeviceToSensor(node, sensor) {
                     "capabilities": [
                         "mysensors_custom",
                         "mysensors_number",
-                        "mysensors_boolean"
-                    ]
+                        "mysensors_boolean",
+                        "mysensors_water_flow"
+                    ],
+                    "options": {
+                        "icons": {
+                            "mysensors_water_flow": "/assets/meter_water.svg"
+                        }
+                    }
                 }
             ]
         };
