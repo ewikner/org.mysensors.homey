@@ -56,6 +56,7 @@ The following actions are available:
     You can set the value to on/off
 
 ### Version history
+* 0.1.8 Merge from terryhendrix, added Water flow
 * 0.1.7 Change to handle the new results from the getCapabilities function because Athom have change it in 0.10. 
 * 0.1.6 Updates for Homey version: 0.10.0 
 * 0.1.5 Change the custom capabilities mobile to be added dynamic.
