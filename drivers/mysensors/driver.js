@@ -543,7 +543,7 @@ function getNextID(message) {
         sensorId: message.sensorId,
         messageType: message.messageType,
         ack: 0,
-        subType: message.subType,
+        subType: 'I_ID_RESPONSE',
         payload: last_node_id
     });
 }
