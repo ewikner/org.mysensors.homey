@@ -13,6 +13,14 @@
         "name": "Erik Wikner",
         "email": "erik.wikner@gmail.com"
     },
+    "contributors": {
+        "developers": [
+            {
+                "name" : "Terry Hendrix",
+                "email": "terryhendrix90@gmail.com"
+            }
+        ]
+    },
     "images": {
         "large": "assets/images/large.png",
         "small": "assets/images/small.png"
@@ -42,9 +50,32 @@
             },
             "getable": true,
             "setable": true
+        },
+        "mysensors_water_flow": {
+            "type": "number",
+            "title": {
+                "en": "Water flow",
+                "nl": "Watergebruik"
+            },
+            "units": {
+                "en": "L/h"
+            },
+            "desc": {
+                "en": "Water flow in liters per hour",
+                "nl": "Watergebruik in liters per uur"
+            },
+            "chartType": "stepLine",
+            "decimals": 2,
+            "getable": true,
+            "setable": false
         }
     },
     "capabilitiesOptions": {
+        "mysensors_water_flow": {
+            "title": {
+                "en": "Water flow"
+            }
+        },
         "mysensors_custom": {
             "title": {
                 "en": "Custom"

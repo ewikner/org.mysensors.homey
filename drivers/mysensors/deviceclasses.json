@@ -5,7 +5,7 @@
 			"name": {
 				"en": "Other"
 			},
-			"capabilities": [ "mysensors_custom", "mysensors_number", "mysensors_boolean"]
+			"capabilities": [ "mysensors_custom", "mysensors_number", "mysensors_boolean", "mysensors_water_flow"]
 		},
 
 		"socket": {
@@ -163,6 +163,24 @@
             "getable": true,
             "setable": true
         },
+		"mysensors_water_flow": {
+		  "type": "number",
+		  "title": {
+			"en": "Water flow",
+			"nl": "Watergebruik"
+		  },
+		  "units": {
+			"en": "L/h"
+		  },
+		  "desc": {
+			"en": "Water flow in liters per hour",
+			"nl": "Watergebruik in liters per uur"
+		  },
+		  "chartType": "stepLine",
+		  "decimals": 2,
+		  "getable": true,
+		  "setable": false
+		},
 		"onoff": {
 			"type": "boolean",
 			"title": {
