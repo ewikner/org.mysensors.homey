@@ -197,7 +197,7 @@ exports.req_set = [
     {'id': '31', 'value': 'V_STOP',                 'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '32', 'value': 'V_IR_SEND',              'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '33', 'value': 'V_IR_RECEIVE',           'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
-    {'id': '34', 'value': 'V_FLOW',                 'capabilities': {'type': 'sensor', 'sub_type': 'meter_water', 'parse_value': 'number'}},
+    {'id': '34', 'value': 'V_FLOW',                 'capabilities': {'type': 'other', 'sub_type': 'mysensors_water_flow', 'parse_value': 'number'}},
     {'id': '35', 'value': 'V_VOLUME',               'capabilities': {'type': 'sensor', 'sub_type': 'meter_water', 'parse_value': 'number'}},
     {'id': '36', 'value': 'V_LOCK_STATUS',          'capabilities': {'type': '', 'sub_type': '', 'parse_value': ''}},
     {'id': '37', 'value': 'V_LEVEL',                'capabilities': {'type': 'sensor', 'sub_type': 'measure_luminance', 'parse_value': 'number'}},
