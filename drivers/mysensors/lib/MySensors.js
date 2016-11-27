@@ -279,7 +279,7 @@ class MySensors extends events.EventEmitter {
 	            }).on('data', function(data) {
 	                var dataArr = data.split('\n');
 	                dataArr.forEach(function(data_str, index) {
-	                    self.handleMessage(self.decodeMessage(data_str, this.gwSplitChar))
+	                    self.handleMessage(self.decodeMessage(data_str, self.gwSplitChar))
 	                });
 	            }).on('end', function() {
 	                self.debugLog('Ethernet disconnected');
