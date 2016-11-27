@@ -15,124 +15,142 @@
             display: inline-flex;
             align-items: center;
         }
+
+        .messageLogGrid {
+          width: 2000px;
+          height: 250px;
+        }
         
         input[type="radio"]:not(:checked)+label{ font-weight: lighter; }
     </style>
-    <link rel="stylesheet" href="/manager/webserver/assets/font/fontawesome/fontawesome.css">
     <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
     <script type="text/javascript" src="/manager/webserver/assets/js/angular.js"></script>
-    <script>
-    angular.module('mysApp', []).controller('settingsCtrl', ['$scope', '$timeout', function($scope, $timeout) {
-        $scope.displayMessage = function(text) {
-          if ($scope.msgPromise != null) {
-            $timeout.cancel($scope.msgPromise);
-          }
-          $scope.$apply(function() {
-            $scope.message = text;
-          });
-
-          $(".message").slideDown();
-
-          $scope.msgPromise = $timeout(function() {
-            $scope.message = '';
-            $(".message").slideUp();
-
-          }, 5000);
-        }
-
-        $scope.saveSettings = function(form) {
-          if (form.$valid) {
-            Homey.set('mys_settings', $scope.settings, function(err, value) {
-              if (!err) {
-                $scope.displayMessage(__('settings.script.success'));
-              }
-            });
-          }
-        }
-
-        $scope.getSettings = function() {
-          Homey.get('mys_settings', function(err, result) {
-            if (err) { 
-              return console.error('Could not get settings', err);
-            }
-            $scope.settings = result;
-            $scope.$apply();
-          });
-        }
-
-        $scope.getSettings();
-    }]);
-
-    function onHomeyReady(){
-        angular.bootstrap(document, ['mysApp']);
-        Homey.ready();
-      }
-    </script> 
+    <script type="text/javascript" src="js/ui-grid.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/manager/webserver/assets/font/fontawesome/fontawesome.css">
+    <link rel="stylesheet" type="text/css" href="css/ui-grid.min.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="js/settings.js"></script> 
   </head>
 <body>
 
-<div ng-controller="settingsCtrl">
+<div>
   <h1 data-i18n="settings.h1"></h1>
-  <p  data-i18n="settings.p"></p>
-  <fieldset id="message" class="message">
-    <legend data-i18n="settings.messagebar.legend"></legend>
-    <div class="message-bar">
-      {{message}}
-    </div>
-  </fieldset>
-  <fieldset>
-      <legend data-i18n="settings.form.legend"></legend>
-      <form name="mysSettings">
-        <div class="oneline">
-            <label for="gatewayType" data-i18n="settings.form.gatewayType"></label>
-            <input type="radio" id="gw-none" ng-model="settings.gatewayType" value="">
-            <label for="gw-none" data-i18n="settings.form.gatewayType_none"></label>
-            <input type="radio" id="gw-mqtt" ng-model="settings.gatewayType" value="mqtt">
-            <label for="gw-mqtt" data-i18n="settings.form.gatewayType_mqtt"></label>
-            <input type="radio" id="gw-ethernet" ng-model="settings.gatewayType" value="ethernet">
-            <label for="gw-ethernet" data-i18n="settings.form.gatewayType_ethernet"></label>
-        </div>
-        
-        <div ng-switch="settings.gatewayType">
-          <div ng-switch-when="mqtt">
-            <div class="field row">
-              <label for="mqtt_host" data-i18n="settings.form.mqtt_host"></label>
-              <input id="mqtt_host" ng-model="settings.mqtt_host" placeholder="0.0.0.0" required />
-            </div>
-            <div class="field row">
-              <label for="mqtt_port" data-i18n="settings.form.mqtt_port"></label>
-              <input id="mqtt_port" ng-model="settings.mqtt_port" placeholder="1883" required />
-            </div>  
-            <div class="field row">
-              <label for="subscribe_topic" data-i18n="settings.form.subscribe_topic"></label>
-              <input id="subscribe_topic" ng-model="settings.subscribe_topic" placeholder="mygateway1-out" />
-            </div>
-            <div class="field row">
-              <label for="publish_topic" data-i18n="settings.form.publish_topic"></label>
-              <input id="publish_topic" ng-model="settings.publish_topic" placeholder="mygateway1-in" />
-            </div>
-          </div>
-          <div ng-switch-when="ethernet">
-            <div class="field row">
-              <label for="ethernet_host" data-i18n="settings.form.ethernet_host"></label>
-              <input id="ethernet_host" ng-model="settings.ethernet_host" placeholder="0.0.0.0" required />
-            </div>
-            <div class="field row">
-              <label for="ethernet_port" data-i18n="settings.form.ethernet_port"></label>
-              <input id="ethernet_port" ng-model="settings.ethernet_port" placeholder="5003" required />
-            </div> 
-             <div class="field row">
-                <label for="timeout" data-i18n="settings.form.timeout"></label>
-                <input id="timeout" ng-model="settings.timeout" value="60000" ng-pattern="/^\d+$/" />
-            </div>
-          </div>
-        </div>
-        <div class="field row">
-          <button type="submit" class="left btn btn-default" ng-click="saveSettings(mysSettings)"  data-i18n="settings.form.submit"></button>
-        </div>
-      </form>
-  </fieldset>
-</div>
 
+  <ul class="nav nav-pills">
+    <li class="active"><a data-toggle="pill" href="#setting">Settings</a></li>
+    <li><a data-toggle="pill" href="#messageLog">messageLog</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div id="setting" class="tab-pane fade in active">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div ng-controller="settingsCtrl">
+          <div id="message" class="alert alert-info message">
+            <div>
+              {{message}}
+            </div>
+          </div>
+          <h4 data-i18n="settings.h4"></h1>
+          <div class="form-group">
+            <div class="checkbox">
+              <label><input id="mys_show_debug" type="checkbox" ng-model="mys_show_debug" ng-change="showDebugChange()"><div data-i18n="settings.mys_show_debug"></div></label>
+            </div>
+          </div>
+          <p  data-i18n="settings.p"></p>
+          <!--
+          <fieldset id="message" class="message">
+            <legend data-i18n="settings.messagebar.legend"></legend>
+            <div class="message-bar">
+              {{message}}
+            </div>
+          </fieldset>
+          -->
+        
+            <form name="mysSettings" class="form-horizontal">
+              <div class="form-group">
+                <label class="control-label col-sm-2" data-i18n="settings.form.gatewayType"></label>
+                <div class="col-sm-4">
+                <label class="radio-inline">
+                  <input type="radio" id="gw-none" ng-model="settings.gatewayType" value=""><div data-i18n="settings.form.gatewayType_none"></div>
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" id="gw-mqtt" ng-model="settings.gatewayType" value="mqtt"><div data-i18n="settings.form.gatewayType_mqtt"></div>
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" id="gw-ethernet" ng-model="settings.gatewayType" value="ethernet"><div data-i18n="settings.form.gatewayType_ethernet"></div>
+                </label>
+                </div>
+              </div>
+              
+              <div ng-switch="settings.gatewayType">
+                <div ng-switch-when="mqtt">
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="mqtt_host" data-i18n="settings.form.mqtt_host"></label>
+                    <div class="col-sm-4">
+                      <input class="form-control" id="mqtt_host" ng-model="settings.mqtt_host" placeholder="0.0.0.0" required />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="mqtt_port" data-i18n="settings.form.mqtt_port"></label>
+                    <div class="col-sm-4">
+                      <input class="form-control" id="mqtt_port" ng-model="settings.mqtt_port" placeholder="1883" required />
+                    </div>
+                  </div>  
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="subscribe_topic" data-i18n="settings.form.subscribe_topic"></label>
+                    <div class="col-sm-4">
+                      <input class="form-control" id="subscribe_topic" ng-model="settings.subscribe_topic" placeholder="mygateway1-out" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="publish_topic" data-i18n="settings.form.publish_topic"></label>
+                    <div class="col-sm-4">
+                      <input class="form-control" id="publish_topic" ng-model="settings.publish_topic" placeholder="mygateway1-in" />
+                    </div>
+                  </div>
+                </div>
+                <div ng-switch-when="ethernet">
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="ethernet_host" data-i18n="settings.form.ethernet_host"></label>
+                    <div class="col-sm-4">
+                      <input class="form-control" id="ethernet_host" ng-model="settings.ethernet_host" placeholder="0.0.0.0" required />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="ethernet_port" data-i18n="settings.form.ethernet_port"></label>
+                    <div class="col-sm-4">
+                      <input class="form-control" id="ethernet_port" ng-model="settings.ethernet_port" placeholder="5003" required />
+                    </div>
+                  </div> 
+                   <div class="form-group">
+                      <label class="control-label col-sm-2" for="timeout" data-i18n="settings.form.timeout"></label>
+                      <div class="col-sm-4">
+                        <input class="form-control" id="timeout" ng-model="settings.timeout" value="60000" ng-pattern="/^\d+$/" />
+                      </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">        
+                <div class="col-sm-offset-2 col-sm-4">
+                  <button type="submit" class="btn btn-default" ng-click="saveSettings(mysSettings)"  data-i18n="settings.form.submit"></button>
+                </div>
+              </div>
+            </form>
+            </div>
+          </div>
+      </div>
+    </div>
+    <div id="messageLog" class="tab-pane fade">
+      <div ng-controller="messageLogCtrl">
+        <div id="messageLogGrid" ui-grid="gridOptions" class="messageLogGrid"></div>
+      </div>
+      <div class="form-group">  
+        <button type="button" id="clearLogBtn" class="btn btn-default" onclick="clearLog()">Clear log</button>
+      </div>
+    </div>
+  </div>
+  </div>
 </body>
 </html>

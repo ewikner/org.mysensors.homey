@@ -1,7 +1,7 @@
 {
     "id": "org.mysensors.homey",
-    "version": "0.1.8",
-    "compatibility": "0.x || 1.x",
+    "version": "1.0.0-beta1",
+    "compatibility": ">=1.0.1",
     "name": {
         "en": "Mysensors.org"
     },
@@ -29,7 +29,7 @@
         "mysensors_custom": {
             "type": "string",
             "title": {
-                "en": "Custom"
+                "en": "Mysensor custom"
             },
             "getable": true,
             "setable": true
@@ -37,7 +37,7 @@
         "mysensors_number": {
             "type": "number",
             "title": {
-                "en": "Custom number"
+                "en": "Mysensor number"
             },
             "decimals": 2,
             "getable": true,
@@ -46,7 +46,7 @@
         "mysensors_boolean": {
             "type": "boolean",
             "title": {
-                "en": "Custom boolean"
+                "en": "Mysensor boolean"
             },
             "getable": true,
             "setable": true
@@ -71,25 +71,28 @@
         }
     },
     "capabilitiesOptions": {
+        "mysensors_custom": {
+            "title": {
+                "en": "Mysensor custom"
+            }
+        },
+        "mysensors_number": {
+            "title": {
+                "en": "Mysensor number"
+            }
+        },
+        "mysensors_boolean": {
+            "title": {
+                "en": "Mysensor boolean"
+            }
+        },
         "mysensors_water_flow": {
             "title": {
                 "en": "Water flow"
             }
         },
-        "mysensors_custom": {
-            "title": {
-                "en": "Custom"
-            }
-        },
-        "mysensors_number": {
-            "title": {
-                "en": "Custom number"
-            }
-        },
-        "mysensors_boolean": {
-            "title": {
-                "en": "Custom boolean"
-            }
+        "onoff": {
+            "showTitle": true
         }
     },
     "drivers": [
@@ -106,7 +109,7 @@
             "capabilities": [],
             "pair": [
                 {
-                    "id": "select_capabilities"
+                    "id": "initPair"
                 }
             ]
         }
@@ -123,7 +126,12 @@
                         "name": "device",
                         "type": "device",
                         "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "sensorId",
+                        "type": "autocomplete"
                     }
+
                 ],
                 "tokens": [
                     {
@@ -144,6 +152,10 @@
                         "name": "device",
                         "type": "device",
                         "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "sensorId",
+                        "type": "autocomplete"
                     }
                 ],
                 "tokens": [
@@ -165,6 +177,10 @@
                         "name": "device",
                         "type": "device",
                         "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "sensorId",
+                        "type": "autocomplete"
                     }
                 ],
                 "tokens": [
@@ -190,6 +206,10 @@
                         "filter": "driver_id=mysensors"
                     },
                     {
+                        "name": "sensorId",
+                        "type": "autocomplete"
+                    },
+                    {
                         "name": "value_is",
                         "type": "text",
                         "placeholder": { 
@@ -208,6 +228,10 @@
                         "name": "device",
                         "type": "device",
                         "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "sensorId",
+                        "type": "autocomplete"
                     },
                     {
                         "name": "value_is",
@@ -243,6 +267,10 @@
                         "filter": "driver_id=mysensors"
                     },
                     {
+                        "name": "sensorId",
+                        "type": "autocomplete"
+                    },
+                    {
                         "name": "value",
                         "type": "text",
                         "placeholder": [
@@ -265,6 +293,10 @@
                         "filter": "driver_id=mysensors"
                     },
                     {
+                        "name": "sensorId",
+                        "type": "autocomplete"
+                    },
+                    {
                         "name": "value",
                         "type": "number",
                         "placeholder": [
@@ -285,6 +317,10 @@
                         "name": "device",
                         "type": "device",
                         "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "sensorId",
+                        "type": "autocomplete"
                     },
                     {
                         "name": "value",

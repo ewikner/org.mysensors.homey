@@ -1,215 +1,134 @@
-var mysensorsProtocol = require('./mysensorsProtocol');
-var deviceClasses = require('./deviceclasses.json');
-var mqtt = require('mqtt');
-var net = require('net');
+var MySensors = require('./lib/MySensors.js');
 
-var gwSplitChar = null;
-var nodes = {};
-var gwClient = null;
-var gwIsConnected = false;
-var connectionTimer = null;
-var discoverTimer = null;
-var settings = {};
+var mySensor = new MySensors();
+var showDebugLog = true;
+var debugLogArr = [];
 
-const FIRMWARE_BLOCK_SIZE = 16;
-const BROADCAST_ADDRESS = 255;
-const NODE_SENSOR_ID = 255;
-var last_node_id = 0;
+function debugLog(message, data) {
+	if (!showDebugLog) {
+		return;
+	}
 
-// Export capabilities
-module.exports.capabilities = {}
+	if (!debugLogArr) {
+		debugLogArr = [];
+	}
 
-Homey.manager('settings').on('set', function(varName) {
-    if(gwClient != null) {
-        gwClient.end();
-    }
-    connectToGateway();
-})
+	if (!data) {
+		data = null;
+	}
 
-function startConnectionTimer() {
-    if(connectionTimer !== null) {
-        clearInterval(connectionTimer);
-    }
-    
-    connectionTimer = setInterval(connectToGateway, 60000);
+	debugLogArr.push({datetime: new Date(), message: message, data: data});
+
+	if (debugLogArr.length > 100) {
+		debugLogArr.splice(0, 1);
+	}
+
+	var d = new Date().getTime();
+	var dString = new Date(d).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+	if (data == null) {
+		console.log(dString+" DRIVER", message);
+	} else {
+		console.log(dString+" DRIVER", message, data);
+	};
 }
 
-function startDiscoverTimer() {
-    if(discoverTimer !== null) {
-        clearInterval(discoverTimer);
-    }
+var self = module.exports = {
+    init : function (devices_data, callback) {
+	    debugLog('init');
+	    showDebugLog = Homey.manager('settings').get('mys_show_debug');
+	    if(showDebugLog === undefined) {
+	    	showDebugLog = true;
+	    }
+	    mySensor.setShowDebugLog(showDebugLog);
+	    self.generateCapabilitiesGetSet();
+	    self.createHomeyListener();
 
-    discoverTimer = setInterval(sendDiscoverMessage, 3600000);
-}
+	    devices_data.forEach(function(device_data) {
+	        self.getDeviceInfo(device_data);
+	    }) 
 
-function sendDiscoverMessage() {
-    debugLog("sendDiscoverMessage")
-    sendData({
-        nodeId: BROADCAST_ADDRESS,
-        sensorId: NODE_SENSOR_ID,
-        messageType: 'internal',
-        ack: 0,
-        subType: 'I_DISCOVER',
-        payload: '0'
-    });
-}
+	    mySensor.connectToGateway();
 
-module.exports.init = function (devices_data, callback) {
-    debugLog('init');
-    generateCapabilitiesFunctions();
-    debugLog(devices_data);
+	    callback()
+	},
 
-    devices_data.forEach(function(device_data) {
-        var node = getNodeById(device_data.nodeId);
-        var sensor = getSensorInNode(node, device_data, true);
 
-        getDeviceInfo(sensor, function(err) {
-            sensor.device.isAdded = true;
-        });
-    }) 
+	generateCapabilitiesGetSet : function() {
+	    module.exports.capabilities = mySensor.generateCapabilitiesGetSet();
+	},
 
-    connectToGateway();
-    createFlowListener();
+	createHomeyListener : function() {
+		module.exports.added = function( device_data, callback ) {
+		    debugLog( "ADDED ",device_data );
+		    callback( null, true );
+		}
 
-    callback()
-}
+	    mySensor.on('nodeSensorRealtimeUpdate', function (nodeDeviceData, capability, payload) {
+	    	module.exports.realtime(nodeDeviceData, capability, payload, function(err, success) {
+	            if (err) {
+	                debugLog('! Realtime ERR 1: ',err);
+	                debugLog('! Realtime ERR 2: ',capability); 
+	                debugLog('! Realtime ERR 3: ',nodeDeviceData);
+	            }
+	        });
+	    })
 
-function getDeviceInfo(sensor, callback) {
-    module.exports.getName( sensor.device.data, function( err, data) {
-        sensor.device.name = data;
-        module.exports.getClass( sensor.device.data, function( err, data) {
-            sensor.device.class = data;
+	    mySensor.on('nodeSensorTriggerValue', function (eventName, sensor, nodeDeviceData, value) {
+	        Homey.manager('flow').triggerDevice(eventName, { 'current_value': value }, { 'sensorId': sensor.sensorId  }, nodeDeviceData);
+	    })
 
-            module.exports.getCapabilities( sensor.device.data, function(err, data) {
-                if(data !== undefined) {
-                    data.forEach(function(capa) {
-                        var capability = {};
-                        capability.type = sensor.device.class;
-                        capability.sub_type = capa;
-                        capability.parse_value = '';
-                        var device_capa = deviceClasses.capabilities[capability.sub_type];
-                        if(device_capa !== undefined) {
-                            capability.parse_value = device_capa.type;
-                        } else {
-                            debugLog("getCapabilities is not listed in deviceClasses");
-                            debugLog(capa);
-                        }
-                        
-                        sensor.device.capabilities = [];
-                        sensor.device.capabilities.push(capability.sub_type);
+	    Homey.manager('settings').on('set', function(varName) {
+	    	if(varName == 'mys_settings') {
+	    		mySensor.settingsSet();
+	    	}
+	    	if(varName == 'mys_show_debug') {
+	    		showDebugLog = Homey.manager('settings').get('mys_show_debug');
+	    		mySensor.setShowDebugLog(showDebugLog);
+	    	}
+	    })
 
-                        sensor.capabilities = capability;
+	    Homey.manager('flow').on('trigger.value_changed.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('trigger.value_changed', this.triggerValue.bind(this))
+	    
+	    Homey.manager('flow').on('trigger.value_on.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('trigger.value_on', this.triggerValue.bind(this))
+	    
+	    Homey.manager('flow').on('trigger.value_off.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('trigger.value_off', this.triggerValue.bind(this))
+	    
+	    Homey.manager('flow').on('condition.value_is.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('condition.value_is', this.conditionValueIs.bind(this));
+	    
+	    Homey.manager('flow').on('condition.onoff.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('condition.onoff', this.conditionOnOff.bind(this));
+	    
+	    Homey.manager('flow').on('action.set_text.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('action.set_text', this.actionSet.bind(this))
+	    
+	    Homey.manager('flow').on('action.set_number.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('action.set_number', this.actionSet.bind(this))
+	    
+	    Homey.manager('flow').on('action.set_onoff.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
+	    Homey.manager('flow').on('action.set_onoff', this.actionSet.bind(this))
+	},
 
-                        callback(null);
-                    })
-                }
-            })
-        })
-    })
-}
+	conditionValueIs: function(callback, args) {
+		debugLog('FLOW = condition.value_is', args)
+        var node = mySensor.getNodeById(args.device.nodeId);
+        if(node !== null) {
+	        var sensor = node.getSensorById(args.sensorId.sensorId);
+	        if(sensor !== null) {
+		        callback( null, (args.value_is === sensor.getPayload()) );
+		    } else {
+		    	callback( null, false);
+		    }
+	    } else {
+	    	callback( null, false);
+	    }
+	},
 
-// Pairing functionality
-module.exports.pair = function (socket) {
-
-    socket.on('select_capabilities', function( data, callback ) {
-        debugLog('select_capabilities');
-        var devices = [];
-
-        for(var nodeId in nodes){
-            var node = nodes[nodeId];
-            if(node !== undefined) {
-                for(var sensorId in node.sensors){
-                    var sensor = node.sensors[sensorId];
-                    if(sensor !== undefined) {
-                        addDeviceToSensor(node, sensor);
-                        if(!sensor.device.isAdded) {
-                            devices.push(sensor.device);
-                        }
-                    }
-                }
-            }
-        }
-        callback( devices , deviceClasses.devices);
-    });
-    
-    socket.on('addedSensor', function( device_data, callback ) {
-        var node = nodes[device_data.data.nodeId];
-        var sensor = node.sensors[device_data.data.sensorId];
-        if(sensor.capabilities) {
-            sensor.capabilities.type = device_data.class;
-            sensor.capabilities.sub_type = device_data.capabilities[0];
-            sensor.capabilities.parse_value = '';
-            var device_capa = deviceClasses.capabilities[sensor.capabilities.sub_type];
-            if(device_capa !== undefined) {
-                sensor.capabilities.parse_value = device_capa.type;
-            }
-        }
-
-        device_data.isAdded = true;
-        sensor.device = device_data;
-        debugLog('addedSensor');
-        debugLog(sensor);
-
-        if(sensor.payload != '') {
-            var messageObj = {
-                nodeId: node.nodeId,
-                sensorId: sensor.sensorId,
-                subType: sensor.payloadType,
-                payload: sensor.payload
-            };
-            handleSet(messageObj, false, false, false);
-        }
-
-        callback(null, sensor.device);
-    });
-}
-
-module.exports.renamed = function( device_data, new_name ) {
-    var node = nodes[device_data.nodeId];
-    var sensor = node.sensors[device_data.sensorId];
-    sensor.device.name = new_name;
-}
-
-module.exports.deleted = function( device_data ) {
-    var node = nodes[device_data.nodeId];
-    var sensor = node.sensors[device_data.sensorId];
-    sensor.device.isAdded = false;
-}
-
-// A user has updated settings, update the device object
-module.exports.settings = function (device_data, newSettingsObj, oldSettingsObj, changedKeysArr, callback) {
-  // TODO
-  debugLog('settings');
-  callback(null, true)
-}
-
-function createFlowListener() {
-    Homey.manager('flow').on('trigger.value_changed', function( callback, args, state ){
-        debugLog('FLOW = trigger.value_changed')
-        callback( null, true );
-    });
-    Homey.manager('flow').on('trigger.value_on', function( callback, args, state ){
-        debugLog('FLOW = trigger.value_on')
-        callback( null, true );
-    });
-    Homey.manager('flow').on('trigger.value_off', function( callback, args, state ){
-        debugLog('FLOW = trigger.value_off');
-        callback( null, true );
-    });
-
-    Homey.manager('flow').on('condition.value_is', function( callback, args ){
-        debugLog('FLOW = condition.value_is')
-        var node_sensor = getNodeAndSensorFromDevice(args.device);
-        var sensor = node_sensor.sensor;
-
-        callback( null, (args.value_is === sensor.payload) );
-    });
-
-    Homey.manager('flow').on('condition.onoff', function( callback, args ){
-        debugLog('FLOW = condition.onoff')
-        var node_sensor = getNodeAndSensorFromDevice(args.device);
-        var sensor = node_sensor.sensor;
-
+	conditionOnOff: function(callback, args) {
+		debugLog('FLOW = condition.onoff', args)
         var testValue = args.value_is;
         switch(testValue) {
             case 'true':
@@ -219,572 +138,114 @@ function createFlowListener() {
                 testValue = false;
                 break;
         }
-        callback( null, (testValue === sensor.payload) );
-    });
 
-    Homey.manager('flow').on('action.set_text', function( callback, args ){
-        debugLog('FLOW = action.set_text')
-        actionSet(args, args.value, function(result ) {
+        var node = mySensor.getNodeById(args.device.nodeId);
+
+        if(node !== null) {
+	        var sensor = node.getSensorById(args.sensorId.sensorId);
+	        if(sensor !== null) {
+		        callback( null, (testValue === sensor.getPayload()) );
+		    } else {
+		    	callback( null, false);
+		    }
+	    } else {
+	    	callback( null, false);
+	    }
+	},
+
+	triggerValue: function(callback, args, state) {
+		if(args.sensorId.sensorId == state.sensorId) {
+        	callback( null, true );
+        } else {
+        	callback( null, false );
+        }
+	},
+
+	actionSet: function( callback, args) {
+		debugLog('FLOW = actionSet', args)
+		mySensor.actionSet(args, function(result ) {
             callback( null, result );
         })
-    });
+	},
 
-    Homey.manager('flow').on('action.set_number', function( callback, args ){
-        debugLog('FLOW = action.set_number')
-        actionSet(args, args.value, function(result ) {
-            callback( null, result );
-        })
-    });
+	triggerAutocomplete: function( callback, args) {
+    	var resultArray = [];
+    	var node = mySensor.getNodeById(args.args.device.nodeId);
+    	var sensors = node.getSensors();
 
-    Homey.manager('flow').on('action.set_onoff', function( callback, args ){
-        debugLog('FLOW = action.set_onoff')
-        actionSet(args, args.value, function(result ) {
-            callback( null, result );
-        })
-    });
-}
+    	if( Object.keys( sensors ).length < 1 ) {
+			return callback( new Error("No Sensors") );
+    	}
 
-function actionSet(args, value, callback) {
-    debugLog(args)
-    var node_sensor = getNodeAndSensorFromDevice(args.device);
-    var node = node_sensor.node;
-    var sensor = node_sensor.sensor;
+    	Object.keys(sensors).forEach(function(sensorId) {
+			var sensor = sensors[sensorId];
+			resultArray.push(sensor.getAutoCompleteObj());
+		});
 
-    args.device.payload = value;
-    args.device.subType = sensor.payloadType;
+    	resultArray = resultArray.filter(( resultArrayItem ) => {
+			return resultArrayItem.name.toLowerCase().indexOf( args.query.toLowerCase() ) > -1;
+		});
+        callback( null, resultArray );
+	},
 
-    handleSet(args.device, true, false, true);
-    callback( true );
-}
+	getDeviceInfo : function(device_data) {
+		var self = this;
+	    var node = mySensor.getNodeById(device_data.nodeId);
+	    
+	    // Check if old version
+	    if(device_data.hasOwnProperty('sensorId')) {
+	    	var sensors_device_arr = {};
+	    	var sensor_device = {
+	            sensorId: device_data.sensorId,
+	            sensorType: device_data.sensorType,
+	            capability: null,
+	            class: 'other'
+	        };
+	       	sensors_device_arr[sensor_device.sensorId] = sensor_device;
+	    	var new_device_data = {
+	    		nodeId: device_data.nodeId,
+	    		showBatteryLevel: false,
+	    		sendAck: false,
+	    		sensors: sensors_device_arr
+	    	}
+	    }
+	    node.setDeviceDataObject(device_data);
+	    node.addNodeToDevice();
 
-function generateCapabilitiesFunctions() {
-    var localCapabilities = {}
-    
-    var specialFunctions = {
-            get: function( device_data, callback ){
-                debugLog("---SPECIAL GET")
-                debugLog(device_data);
-                debugLog("SPECIAL GET---")
-                var node_sensor = getNodeAndSensorFromDevice(device_data);
-                var sensor = node_sensor.sensor;
-                if( typeof callback == 'function' ) {
-                    callback( null, sensor.payload );
-                }
-            },
-            set: function( device_data, value, callback ) {
-                debugLog("---SPECIAL SET")
-                debugLog(device_data);
-                debugLog(value)
-                debugLog("SPECIAL SET---")
-                var node_sensor = getNodeAndSensorFromDevice(device_data);
-                var sensor = node_sensor.sensor;
-                device_data.payload = value;
-                device_data.subType = sensor.payloadType;
+	    module.exports.getName( device_data, function( err, nameValue) {
+	        node.setName(nameValue);
+	    })
+	},
 
-                handleSet(device_data, true, true, true);
-                if( typeof callback == 'function' ) {
-                    callback( null, device_data.payload );
-                }
-            }
-    };
+	pair : function (socket) {
+	    socket.on('initPair', function( data, callback ) {
+	        mySensor.initPair( data, callback );
+	    });
 
-    for(var capabilityname in deviceClasses.capabilities){
-        if(localCapabilities[capabilityname] == null) {
-            localCapabilities[capabilityname] = specialFunctions;
-        }
-    }
+	    socket.on('addedNodePair', function(data, callback) {
+	        mySensor.addedNodePair(data, callback);
+	    });
 
-    module.exports.capabilities = localCapabilities;
-}
+	    socket.on('addedDevicePair', function(device, callback) {
+	        mySensor.addedDevicePair(device, callback);
+	    });
+	},
 
-function handleMessage(message) {
-    if(message) {
-        debugLog('----- handleMessage -------')
-        debugLog(message)
-        switch(message.messageType) {
-            case 'presentation': handlePresentation(message); break;
-            case 'set': handleSet(message); break;
-            case 'req': handleReq(message); break;
-            case 'internal': handleInternal(message); break;
-            case 'stream': handleStream(message); break;
-        }
-    }
-}
+	renamed : function( device_data, new_name ) {
+	    mySensor.renameDevice( device_data, new_name );
+	},
 
-function handlePresentation(message) {
-    debugLog('----- presentation -------')
-    var node = getNodeById(message.nodeId);
-    var sensors = getSensorInNode(node, message);
-    debugLog(node);
-}
+	deleted : function( device_data ) {
+	     mySensor.deletedDevice( device_data );
+	},
 
-function parsePayload(capabilities, value) {
-    var newValue = null;
-    var capability = deviceClasses.capabilities[capabilities];
-    debugLog('value = '+value);
-    if(capability) {
-        switch(capability.type) {
-            case 'number': newValue = parseFloat(value); break;
-            case 'enum': newValue = value; break;
-            case 'boolean': 
-                if(value == 0) {
-                    newValue = false;
-                } else {
-                    newValue = true;
-                }
-                break;
-            default: newValue = value;
-        }
-    }
-    debugLog('return value = '+newValue);
-    return newValue;
-}
+	settings : function (device_data, newSettingsObj, oldSettingsObj, changedKeysArr, callback) {
+	  // TODO
+	  debugLog('settings');
+	  callback(null, true)
+	},
 
-function handleSet(message, isDeviceData, triggerFlow, sendSetData) {
-    if (typeof isDeviceData === 'undefined') {
-        isDeviceData = false;
-    }
-    if (typeof triggerFlow === 'undefined') {
-        triggerFlow = true;
-    }
-    if (typeof sendSetData === 'undefined') {
-        sendSetData = false;
-    }
-
-    debugLog('----- set -------')
-    var node = getNodeById(message.nodeId);
-    var sensor = getSensorInNode(node, message, isDeviceData);
-
-    if(sensor != null) {
-        sensor.payloadType = message.subType;
-        sensor.time = Date.now();
-        var old_payload = sensor.payload;
-        sensor.payload = message.payload;
-
-        debugLog(sensor);
-        if(sensor.capabilities) {
-            if(sensor.device) {
-                var capability = sensor.capabilities.sub_type;
-                sensor.payload = parsePayload(capability, message.payload);
-                debugLog('capability: ' + capability + ' payload: '+sensor.payload)
-                module.exports.realtime(sensor.device.data, capability, sensor.payload, function(err, success) {
-                    if (err) {
-                        debugLog('! Realtime: ' + err); 
-                    }
-                    debugLog('Realtime: ' + success); 
-                });
-                if(triggerFlow) {
-                    if(old_payload != sensor.payload) {
-                        Homey.manager('flow').triggerDevice('value_changed', { current_value: sensor.payload }, null, sensor.device.data, function(err, result) {
-                            debugLog("trigger flow.value_changed = "+ node.nodeId +':'+ sensor.sensorId)
-                        });
-                    }
-                    
-                    switch(sensor.payload) {
-                        case true:
-                            Homey.manager('flow').triggerDevice('value_on', { current_value: sensor.payload }, null, sensor.device.data, function(err, result) {
-                                debugLog("trigger flow.value_on = "+ node.nodeId +':'+ sensor.sensorId)
-                            });
-                            break;
-                        case false:
-                            Homey.manager('flow').triggerDevice('value_off', { current_value: sensor.payload }, null, sensor.device.data, function(err, result) {
-                                debugLog("trigger flow.value_off = "+ node.nodeId +':'+ sensor.sensorId)
-                            });
-                            break;
-                    }
-                }
-
-                if(sendSetData) {
-                    sendData({
-                        nodeId: node.nodeId,
-                        sensorId: sensor.sensorId,
-                        messageType: 'set',
-                        ack: 0,
-                        subType: sensor.payloadType,
-                        payload: sensor.payload
-                    });
-                }
-            }
-        } else {
-            sensor.payload = message.payload;
-            debugLog('sensor have no capabilities')
-        }
-    }
-}
-
-function handleReq(message) {
-    debugLog('----- req -------')
-}
-
-function handleInternal(message) {
-    debugLog('----- internal -------')
-    debugLog('subType: '+message.subType)
-    switch(message.subType) {
-        case 'I_BATTERY_LEVEL': 
-            // BATTERY
-            var node = getNodeById(message.nodeId);
-            node.batteryLevel = message.payload;
-            break;
-        case 'I_TIME':
-            sendData({
-                nodeId: message.nodeId,
-                sensorId: message.sensorId,
-                messageType: message.messageType,
-                ack: 0,
-                subType: message.subType,
-                payload: new Date().getTime()/1000
-            });
-            break;
-        case 'I_VERSION': 
-            if(message.nodeId > 0) {
-                var node = getNodeById(message.nodeId);
-                if(node.sketchName !== message.payload) {
-                    node.sketchName = message.payload;
-                }
-            }
-            break;
-        case 'I_ID_REQUEST': 
-            getNextID(message);
-            break;
-        case 'I_ID_RESPONSE': break;
-        case 'I_INCLUSION_MODE': break;
-        case 'I_CONFIG': 
-            sendData({
-                nodeId: message.nodeId,
-                sensorId: NODE_SENSOR_ID,
-                messageType: message.messageType,
-                ack: 0,
-                subType: message.subType,
-                payload: 'M'
-            });
-            break;
-        case 'I_FIND_PARENT': break;
-        case 'I_FIND_PARENT_RESPONSE': break;
-        case 'I_LOG_MESSAGE': break;
-        case 'I_CHILDREN': break;
-        case 'I_SKETCH_NAME': 
-            var node = getNodeById(message.nodeId);
-            if(node.sketchName !== message.payload) {
-                node.sketchName = message.payload;
-            }
-            break;
-        case 'I_SKETCH_VERSION': 
-            var node = getNodeById(message.nodeId);
-            if(node.sketchVersion !== message.payload) {
-                node.sketchVersion = message.payload;
-            }
-            break;
-        case 'I_REBOOT': break;
-        case 'I_GATEWAY_READY': break;
-        case 'I_REQUEST_SIGNING': break;
-        case 'I_GET_NONCE': break;
-        case 'I_GET_NONCE_RESPONSE': break;
-        case 'I_HEARTBEAT': break;
-        case 'I_PRESENTATION': break;
-        case 'I_DISCOVER': break;
-        case 'I_DISCOVER_RESPONSE': break;
-        case 'I_HEARTBEAT_RESPONSE': break;
-        case 'I_LOCKED': break;
-        case 'I_PING': break;
-        case 'I_PONG': break;
-        case 'I_REGISTRATION_REQUEST': break;
-        case 'I_REGISTRATION_RESPONSE': break;
-        case 'I_DEBUG': break;
-    }
-}
-
-function handleStream(message) {
-    debugLog('----- stream -------')
-    debugLog('Not implemented')
-}
-
-function sendData(messageObj) {
-    debugLog('-- SEND DATA ----');
-    if(messageObj.subType == '') {
-        var node = nodes[messageObj.nodeId];
-        var sensor = node.sensors[messageObj.sensorId];
-
-        var firstChar = sensor.sensorType.charAt(0);
-
-        if(firstChar == 'S') {
-            mysensorsProtocol.presentation.forEach(function(item, index) {
-                if(item.value == sensor.sensorType) {
-                    if(item.variables.length > 0) {
-                        messageObj.subType = item.variables[0];
-                    }
-                }
-            });
-        } else if(firstChar == 'V') {
-            messageObj.subType = sensor.sensorType;
-        }
-    }
-    var dataStr = mysensorsProtocol.encodeMessage(messageObj, gwSplitChar, settings.gatewayType);
-    debugLog(dataStr);
-
-    if(gwClient != null) {
-        if(settings.gatewayType == 'mqtt') {
-            debugLog("SENDDATA to MQTT "+settings.publish_topic+'/'+dataStr.message_str);
-            gwClient.publish(settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
-        } else if(settings.gatewayType == 'ethernet') {
-            debugLog("SENDDATA to ethernet "+dataStr);
-            gwClient.write(dataStr + "\n");
-        }
-    }
-}
-
-function getNextID(message) {
-    debugLog('-- getNextID ----');
-    if(last_node_id <= NODE_SENSOR_ID-1) {
-        last_node_id++;
-    }
-
-    sendData({
-        nodeId: message.nodeId,
-        sensorId: message.sensorId,
-        messageType: message.messageType,
-        ack: 0,
-        subType: 'I_ID_RESPONSE',
-        payload: last_node_id
-    });
-}
-
-function getNodeAndSensorFromDevice(device) {
-    var node = getNodeById(device.nodeId, false);
-    var sensor = getSensorInNode(node, device, true);
-    return {node: node, sensor: sensor}
-}
-
-function getNodeById(nodeId, createNew) {
-    if (typeof createNew === 'undefined') {
-        createNew = true;
-    }
-    debugLog("--- getNodeById ----")
-    var node = nodes[nodeId];
-
-    if(createNew !== false) {
-        if(node === undefined) {
-            if(last_node_id < nodeId) {
-                last_node_id = nodeId;
-            }
-            debugLog("--- NEW NODE ----")
-            var node = {
-                nodeId: nodeId,
-                batteryLevel: '',
-                sketchName: '',
-                sketchVersion: '',
-                version: '',
-                sensors: {}
-            };
-            nodes[node.nodeId] = node;
-        }
-    }
-    
-    return node;
-}
-
-function addDeviceToSensor(node, sensor) {
-    var data_capabilities = [];
-    var data_class = "";
-    if(sensor.capabilities) {
-
-        var sensor_capability = sensor.capabilities.sub_type;
-        data_class = sensor.capabilities.type;
-        data_capabilities.push(sensor_capability);
-    }
-    
-    debugLog(sensor);
-    if(sensor.device == null) {
-        sensor.device = {
-            data: {
-                id: node.nodeId + '_' + sensor.sensorId,
-                nodeId: node.nodeId,
-                sensorId: sensor.sensorId,
-                sensorType: sensor.sensorType
-            },
-            isAdded: false,
-            name: node.nodeId + ':' + sensor.sensorId + ' ' + sensor.sensorType,
-            class: data_class,
-            capabilities: data_capabilities
-        };
-    }
-    
-    if(data_class == 'other') {
-        sensor.device.mobile = {
-            "components": [
-                {
-                    "id": "icon",
-                    "capabilities": []
-                },
-                {
-                    "id": "sensor",
-                    "capabilities": [
-                        "mysensors_custom",
-                        "mysensors_number",
-                        "mysensors_boolean",
-                        "mysensors_water_flow"
-                    ],
-                    "options": {
-                        "icons": {
-                            "mysensors_water_flow": "/assets/meter_water.svg"
-                        }
-                    }
-                }
-            ]
-        };
-    }
-}
-
-function getSensorInNode(node, message, isDeviceData) {
-    if (typeof isDeviceData === 'undefined') {
-        isDeviceData = false;
-    }
-    debugLog("--- getSensorInNode ----")
-    var sensor = node.sensors[message.sensorId];
-
-    if(sensor === undefined) {
-        if(message.sensorId == BROADCAST_ADDRESS) {
-            if(message.messageType == 'presentation') {
-                if(message.subType == 'S_ARDUINO_NODE') {
-                    node.version = message.payload;
-                }
-            }
-        } else {
-            debugLog("--- NEW SENSOR ----")
-            var subType = message.subType;
-            if(subType === undefined) {
-                subType = message.sensorType;
-            }
-            var sensor = {
-                sensorId: message.sensorId,
-                sensorType: subType,
-                payload: '',
-                payloadType: '',
-                time: '',
-                device: null
-            };
-
-            sensor.capabilities = mysensorsProtocol.getCapabilities(sensor.sensorType);
-            if(sensor.capabilities != null) {
-                sensor.capabilities.parse_value = '';
-                var device_capa = deviceClasses.capabilities[sensor.capabilities.sub_type];
-                if(device_capa !== undefined) {
-                    sensor.capabilities.parse_value = device_capa.type;
-                }
-            }
-
-            if(isDeviceData === true) {
-                addDeviceToSensor(node, sensor);
-            }
-
-            node.sensors[sensor.sensorId] = sensor;
-        }
-    } else {
-        if(message.messageType == 'presentation') {
-            if(sensor.sensorType != message.subType) {
-                sensor.sensorType = message.subType;
-            }
-        }
-    }
-
-    return sensor;
-}
-
-function connectToGateway() {
-    settings = Homey.manager('settings').get('mys_settings');
-    debugLog(settings)
-    if(settings && (gwIsConnected === false)) {
-        if((settings.gatewayType == 'mqtt') && 
-            (settings.mqtt_host != '') && 
-            (settings.mqtt_port != '') && 
-            (settings.publish_topic != '') && 
-            (settings.subscribe_topic != '')) {
-
-            debugLog("----MQTT-----")
-
-            gwSplitChar = '/';
-            topicPublish = settings.publish_topic;
-            topicSubscribe = settings.subscribe_topic;
-
-            gwClient = mqtt.connect('mqtt://'+settings.mqtt_host+':'+settings.mqtt_port);
-     
-            gwClient.on('connect', function () {
-                if(gwClient != null) {
-                    clearInterval(connectionTimer);
-                    gwIsConnected = true;
-                    debugLog('MQTT connected');
-                    gwClient.subscribe(topicPublish + '/#');
-                    gwClient.subscribe(topicSubscribe + '/#');
-                    sendDiscoverMessage();
-                    startDiscoverTimer();
-                }
-              
-            }).on('message', function (topic, data) {
-                var dataTopic = topic.substr(topic.indexOf('/')+1);
-                var mqttTopic = topic.substr(0,topic.indexOf('/'));
-
-                switch(mqttTopic) {
-                    case topicPublish:
-                        //debugLog('publish');
-                        break;
-                    case topicSubscribe:
-                        debugLog('subscribe');
-                        handleMessage(mysensorsProtocol.decodeMessage(dataTopic+'/'+data, gwSplitChar))
-                        break;
-                }
-            }).on('reconnect', function () {
-                debugLog('MQTT reconnect');
-            }).on('close', function () {
-                debugLog('MQTT disconnected');
-                startConnectionTimer();
-                gwClient = null;
-                gwIsConnected = false;
-            }).on('error', function (error) {
-                debugLog('MQTT error');
-                debugLog(error);
-            });
-
-        } else if((settings.gatewayType == 'ethernet') && 
-                (settings.ethernet_host != '') && 
-                (settings.ethernet_port != '') && 
-                (settings.timeout != '')) {
-
-            debugLog("----Ethernet-----")
-            gwSplitChar = ';';
-            gwClient = net.Socket();
-            gwClient.connect(settings.ethernet_port, settings.ethernet_host);
-            if(settings.timeout === undefined) {
-                settings.timeout = 60000;
-            }
-            gwClient.setEncoding('ascii');
-            gwClient.setTimeout(parseInt(settings.timeout));
-            gwClient.on('connect', function() {
-                clearInterval(connectionTimer);
-                gwIsConnected = true;
-                debugLog('Ethernet connected');
-                sendDiscoverMessage();
-                startDiscoverTimer();
-                
-            }).on('data', function(data) {
-                var dataArr = data.split('\n');
-                dataArr.forEach(function(data_str, index) {
-                    handleMessage(mysensorsProtocol.decodeMessage(data_str, gwSplitChar))
-                });
-            }).on('end', function() {
-                debugLog('Ethernet disconnected');
-                startConnectionTimer();
-                gwClient = null;
-                gwIsConnected = false;
-            }).on('error', function(err) {
-                debugLog('Ethernet error'+err.message);
-            });
-        } else {
-            debugLog("----TEST-----")
-        }
-    } else {
-        startConnectionTimer();
-    }
-}
-
-function debugLog(str) {
-    Homey.log(str);
+	testFunctions : function(func) {
+	    return mySensor[func].apply(mySensor, Array.prototype.slice.call(arguments, 1));
+	}
 }

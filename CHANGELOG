@@ -1,0 +1,6 @@
+V1.0.0 - 2016-11-27
+	- Refactoring code
+	- Added a message list in settings view
+	- Added ACK support
+	- Change that every node get it's own devicecard insted of every sensor have it's own devicecard 
+	- Added a autocompleter to all flow cards

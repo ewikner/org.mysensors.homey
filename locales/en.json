@@ -1,6 +1,7 @@
 {
 	"settings": {
-		"h1": "Settings for MySensors Gateway",
+		"h1": "MySensors",
+		"h4": "Settings for MySensors Gateway",
 		"p": "Add data to connect to your Gateway",
 		"script": {
 			"success": "Saved success"
@@ -8,6 +9,9 @@
 		"messagebar": {
 			"legend": "Message"
 		},
+		"clearLog": "You have now cleared the log",
+		"mys_show_debug": "Show debug log to console",
+		"change_mys_show_debug": "Change debug setting",
 		"form": {
 			"legend": "Settings",
 			"gatewayType": "Connection type",
@@ -25,8 +29,36 @@
 		}
 	},
 	"pair": {
-		"start": {
-			"title": "Start connect to your Gateway"
+		"title": "Add your sensor",
+		"select_capability": "Select capability",
+		"showSensorList": "Show Sensor list",
+		"hideSensorList": "Hide Sensor list",
+		"noSensors": "No sensors",
+		"noNodes": "You may close this window.",
+		"selectSensorType": "Select Sensor type",
+		
+		"nodeForm": {
+			"name": "Node name",
+			"battery": "Show Battery Level",
+			"ack": "Send Ack",
+			"newSensor": "New Sensor",
+			"cancel": "Cancel",
+			"add": "Add"
+		},
+		"sensorForm" : {
+			"sensor_id": "Sensor ID",
+			"type": "Sensor Type",
+			"capability": "Sensor Capability",
+			"delete": "Delete",
+			"cancel": "Cancel",
+			"save": "Save"
+
+		},
+		"errors": {
+			"sensor_exists": "Sensor ID already exists, Try again!",
+			"sensor_between": "Sensor ID min 0 and max 254, Try again!",
+			"sensor_capability": "You need to select a capability",
+			"sensor_no_capability": "have not a capability"
 		}
 	}
 }
