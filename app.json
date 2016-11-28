@@ -71,26 +71,6 @@
         }
     },
     "capabilitiesOptions": {
-        "mysensors_custom": {
-            "title": {
-                "en": "Mysensor custom"
-            }
-        },
-        "mysensors_number": {
-            "title": {
-                "en": "Mysensor number"
-            }
-        },
-        "mysensors_boolean": {
-            "title": {
-                "en": "Mysensor boolean"
-            }
-        },
-        "mysensors_water_flow": {
-            "title": {
-                "en": "Water flow"
-            }
-        },
         "onoff": {
             "showTitle": true
         }
