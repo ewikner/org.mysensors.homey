@@ -70,11 +70,6 @@
             "setable": false
         }
     },
-    "capabilitiesOptions": {
-        "onoff": {
-            "showTitle": true
-        }
-    },
     "drivers": [
         {
             "id": "mysensors",

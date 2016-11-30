@@ -33,7 +33,7 @@ function debugLog(message, data) {
 }
 
 var self = module.exports = {
-    init : function (devices_data, callback) {
+    init : (devices_data, callback) => {
 	    debugLog('init');
 	    showDebugLog = Homey.manager('settings').get('mys_show_debug');
 	    if(showDebugLog === undefined) {
@@ -43,7 +43,7 @@ var self = module.exports = {
 	    self.generateCapabilitiesGetSet();
 	    self.createHomeyListener();
 
-	    devices_data.forEach(function(device_data) {
+	    devices_data.forEach((device_data) => {
 	        self.getDeviceInfo(device_data);
 	    }) 
 
@@ -53,18 +53,19 @@ var self = module.exports = {
 	},
 
 
-	generateCapabilitiesGetSet : function() {
+	generateCapabilitiesGetSet : () => {
+		debugLog(" IN generateCapabilitiesGetSet")
 	    module.exports.capabilities = mySensor.generateCapabilitiesGetSet();
 	},
 
 	createHomeyListener : function() {
-		module.exports.added = function( device_data, callback ) {
+		module.exports.added = ( device_data, callback ) => {
 		    debugLog( "ADDED ",device_data );
 		    callback( null, true );
 		}
 
-	    mySensor.on('nodeSensorRealtimeUpdate', function (nodeDeviceData, capability, payload) {
-	    	module.exports.realtime(nodeDeviceData, capability, payload, function(err, success) {
+	    mySensor.on('nodeSensorRealtimeUpdate', (nodeDeviceData, capability, payload) => {
+	    	module.exports.realtime(nodeDeviceData, capability, payload, (err, success) => {
 	            if (err) {
 	                debugLog('! Realtime ERR 1: ',err);
 	                debugLog('! Realtime ERR 2: ',capability); 
@@ -73,11 +74,11 @@ var self = module.exports = {
 	        });
 	    })
 
-	    mySensor.on('nodeSensorTriggerValue', function (eventName, sensor, nodeDeviceData, value) {
+	    mySensor.on('nodeSensorTriggerValue', (eventName, sensor, nodeDeviceData, value) => {
 	        Homey.manager('flow').triggerDevice(eventName, { 'current_value': value }, { 'sensorId': sensor.sensorId  }, nodeDeviceData);
 	    })
 
-	    Homey.manager('settings').on('set', function(varName) {
+	    Homey.manager('settings').on('set', (varName) => {
 	    	if(varName == 'mys_settings') {
 	    		mySensor.settingsSet();
 	    	}
@@ -112,7 +113,7 @@ var self = module.exports = {
 	    Homey.manager('flow').on('action.set_onoff', this.actionSet.bind(this))
 	},
 
-	conditionValueIs: function(callback, args) {
+	conditionValueIs: (callback, args) => {
 		debugLog('FLOW = condition.value_is', args)
         var node = mySensor.getNodeById(args.device.nodeId);
         if(node !== null) {
@@ -127,7 +128,7 @@ var self = module.exports = {
 	    }
 	},
 
-	conditionOnOff: function(callback, args) {
+	conditionOnOff: (callback, args) => {
 		debugLog('FLOW = condition.onoff', args)
         var testValue = args.value_is;
         switch(testValue) {
@@ -153,7 +154,7 @@ var self = module.exports = {
 	    }
 	},
 
-	triggerValue: function(callback, args, state) {
+	triggerValue: (callback, args, state) => {
 		if(args.sensorId.sensorId == state.sensorId) {
         	callback( null, true );
         } else {
@@ -161,14 +162,14 @@ var self = module.exports = {
         }
 	},
 
-	actionSet: function( callback, args) {
+	actionSet: ( callback, args) => {
 		debugLog('FLOW = actionSet', args)
-		mySensor.actionSet(args, function(result ) {
+		mySensor.actionSet(args, (result ) => {
             callback( null, result );
         })
 	},
 
-	triggerAutocomplete: function( callback, args) {
+	triggerAutocomplete: ( callback, args) => {
     	var resultArray = [];
     	var node = mySensor.getNodeById(args.args.device.nodeId);
     	var sensors = node.getSensors();
@@ -177,7 +178,7 @@ var self = module.exports = {
 			return callback( new Error("No Sensors") );
     	}
 
-    	Object.keys(sensors).forEach(function(sensorId) {
+    	Object.keys(sensors).forEach((sensorId) => {
 			var sensor = sensors[sensorId];
 			resultArray.push(sensor.getAutoCompleteObj());
 		});
@@ -188,8 +189,7 @@ var self = module.exports = {
         callback( null, resultArray );
 	},
 
-	getDeviceInfo : function(device_data) {
-		var self = this;
+	getDeviceInfo : (device_data) => {
 	    var node = mySensor.getNodeById(device_data.nodeId);
 	    
 	    // Check if old version
@@ -212,40 +212,40 @@ var self = module.exports = {
 	    node.setDeviceDataObject(device_data);
 	    node.addNodeToDevice();
 
-	    module.exports.getName( device_data, function( err, nameValue) {
+	    module.exports.getName( device_data, ( err, nameValue) => {
 	        node.setName(nameValue);
 	    })
 	},
 
-	pair : function (socket) {
-	    socket.on('initPair', function( data, callback ) {
+	pair : (socket) => {
+	    socket.on('initPair', ( data, callback ) => {
 	        mySensor.initPair( data, callback );
 	    });
 
-	    socket.on('addedNodePair', function(data, callback) {
+	    socket.on('addedNodePair', (data, callback) => {
 	        mySensor.addedNodePair(data, callback);
 	    });
 
-	    socket.on('addedDevicePair', function(device, callback) {
+	    socket.on('addedDevicePair', (device, callback) => {
 	        mySensor.addedDevicePair(device, callback);
 	    });
 	},
 
-	renamed : function( device_data, new_name ) {
+	renamed : ( device_data, new_name ) => {
 	    mySensor.renameDevice( device_data, new_name );
 	},
 
-	deleted : function( device_data ) {
+	deleted : ( device_data ) => {
 	     mySensor.deletedDevice( device_data );
 	},
 
-	settings : function (device_data, newSettingsObj, oldSettingsObj, changedKeysArr, callback) {
+	settings : (device_data, newSettingsObj, oldSettingsObj, changedKeysArr, callback) => {
 	  // TODO
 	  debugLog('settings');
 	  callback(null, true)
 	},
 
-	testFunctions : function(func) {
+	testFunctions : (func) => {
 	    return mySensor[func].apply(mySensor, Array.prototype.slice.call(arguments, 1));
 	}
 }

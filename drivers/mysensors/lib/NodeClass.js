@@ -43,15 +43,39 @@ class Node extends events.EventEmitter {
 	}
 
 	setShowBatteryLevel(value) {
-		this.showBatteryLeve = value;;
+		this.showBatteryLevel = value;
 	}
 
 	setBatteryLevel(value) {
-		this.batteryLevel = value;
+		this.batteryLevel = this.parseBatteryLevel(value);
+		if (this.showBatteryLevel) {
+			this.triggerNodeSensorRealtimeUpdate("measure_battery.255", this.batteryLevel);
+		}
 	}
 
 	getBatteryLevel() {
 		return this.batteryLevel;
+	}
+
+	parseBatteryLevel(value) {
+		var newValue = null;
+		if(value != '') {
+            value = Number(value);
+            if(value > 100) {
+                var divWith = 1;
+                for (var i = 0; i < value.toString().length; i++) {
+                    divWith = divWith+'0';
+                }
+                
+                value = value/divWith;
+            }
+            if(value < 0) {
+                value = 0;
+            }
+            value = value.toFixed(2);
+            newValue = parseFloat(value);
+        }
+        return newValue;
 	}
 
 	setVersion(value) {
@@ -113,8 +137,6 @@ class Node extends events.EventEmitter {
 	}
 
 	getSensorFromMessage(message) {
-		var self = this;
-
 	    var sensor = this.getSensorById(message.sensorId);
 
 	    if(sensor === undefined) {
@@ -128,34 +150,33 @@ class Node extends events.EventEmitter {
 	}
 
 	addSensorsEventListener(sensor) {
-		var self = this;
-		sensor.on('sensorSendSetMessage', function (message, callback) {
-			if(self.isAdded) {
-				message.nodeId = self.nodeId;
-				if(self.sendAck) {
+		sensor.on('sensorSendSetMessage', (message, callback) => {
+			if(this.isAdded) {
+				message.nodeId = this.nodeId;
+				if(this.sendAck) {
 					message.ack = 1;
 				}
-				self.emit('nodeSensorSendSetMessage', message, callback);
+				this.emit('nodeSensorSendSetMessage', message, callback);
 			}
 		})
 
-		sensor.on('sensorTriggerValue', function (eventName, sensor, value) {
-			if(self.isAdded) {
-				var node_device_data = self.getDeviceDataObject();
-				self.emit('nodeSensorTriggerValue', eventName, sensor, node_device_data, value);
+		sensor.on('sensorTriggerValue', (eventName, sensor, value) => {
+			if(this.isAdded) {
+				var node_device_data = this.getDeviceDataObject();
+				this.emit('nodeSensorTriggerValue', eventName, sensor, node_device_data, value);
 			}
 		})
 
-		sensor.on('getNodeDeviceData', function (callback) {
-			if(self.isAdded) {
-				var node_device_data = self.getDeviceDataObject();
+		sensor.on('getNodeDeviceData', (callback) => {
+			if(this.isAdded) {
+				var node_device_data = this.getDeviceDataObject();
 				callback(node_device_data);
 			}
 		})
 
-		sensor.on('sensorRealtimeUpdate', function (capability, payload) {
-			if(self.isAdded) {
-				self.triggerNodeSensorRealtimeUpdate(capability, payload);
+		sensor.on('sensorRealtimeUpdate', (capability, payload) => {
+			if(this.isAdded) {
+				this.triggerNodeSensorRealtimeUpdate(capability, payload);
 			}
 		})
 		
@@ -176,7 +197,6 @@ class Node extends events.EventEmitter {
 	}
 
 	getSensorClasses() {
-		var self = this;
 		return 'other';
 	}
 
@@ -184,11 +204,6 @@ class Node extends events.EventEmitter {
 		for(var sensorId in this.sensors) {
 			var sensor = this.getSensorById(sensorId);
 			sensor.triggerRealtimeUpdate();
-		}
-
-		if (this.showBatteryLevel) {
-			var batteryPayload = this.batteryLevel;
-			this.triggerNodeSensorRealtimeUpdate("measure_battery.0", batteryPayload);
 		}
 	}
 
@@ -203,7 +218,7 @@ class Node extends events.EventEmitter {
 		}
 
 		if (this.showBatteryLevel) {
-			sensorCapabilities.push("measure_battery.0");
+			sensorCapabilities.push("measure_battery.255");
 		}
 
 		return sensorCapabilities;
@@ -228,12 +243,6 @@ class Node extends events.EventEmitter {
 		sensorObj.id = "sensor";
 		sensorObj.capabilities = [];
 		sensorObj.options = { icons: {}}
-
-		// boolean
-		var toggleObj = {};
-		toggleObj.id = "toggle";
-		toggleObj.capabilities = [];
-		toggleObj.options = { icons: {}}
 
 		// number
 		var sliderObj = {};
@@ -270,10 +279,15 @@ class Node extends events.EventEmitter {
 	        }
 	        switch(capabilityType) {
 	        	case 'onoff':
+					var toggleObj = {};
+					toggleObj.id = "toggle";
+					toggleObj.capabilities = [];
+					toggleObj.options = { icons: {}}
 		        	if(iconPath != null) {
 			        	toggleObj.options.icons[capability] = iconPath;
 			        }
 					toggleObj.capabilities.push(capability);
+					mobileObj.components.push(toggleObj);
 	        		break;
 	        	case 'dim':
 		        	if(iconPath != null) {
@@ -325,9 +339,6 @@ class Node extends events.EventEmitter {
 
 		if(sensorObj.capabilities.length > 0) {
 			mobileObj.components.push(sensorObj);
-		}
-		if(toggleObj.capabilities.length > 0) {
-			mobileObj.components.push(toggleObj);
 		}
 		if(sliderObj.capabilities.length > 0) {
 			mobileObj.components.push(sliderObj);
