@@ -67,7 +67,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	getDeviceClassesCapabilities() {
-	    return deviceClasses.capabilities;
+	    return Object.assign(deviceClasses.capabilities, Homey.manifest.capabilities)
 	}
 
 	initPair(data, callback ) {

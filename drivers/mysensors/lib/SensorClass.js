@@ -10,6 +10,7 @@ class Sensor extends events.EventEmitter {
         //console.log("------- NEW SENSORClass ID = "+sensorId+" -------")
         this.sensorId = sensorId;
         this.sensorType = sensorType;
+        this.title = '';
         this.payload = '';
         this.payloadType = '';
         this.lastSet = '';
@@ -17,6 +18,13 @@ class Sensor extends events.EventEmitter {
         this.capability = null;
         this.class = 'other';
 
+    }
+
+    getTitle() {
+        return this.title;
+    }
+    setTitle(value) {
+        this.title = value;
     }
 
     getAutoCompleteObj() {
@@ -38,6 +46,7 @@ class Sensor extends events.EventEmitter {
         var sensor_device = {
             sensorId: this.sensorId,
             sensorType: this.sensorType,
+            title: this.title,
             // payload: this.payload,
             // payloadType: this.payloadType,
             // lastSet: this.lastSet,
@@ -51,6 +60,7 @@ class Sensor extends events.EventEmitter {
     setDeviceDataObject(device_data) {
         this.sensorId = device_data.sensorId;
         this.sensorType = device_data.sensorType;
+        this.title = device_data.title;
         // this.payload = device_data.payload;
         // this.payloadType = device_data.payloadType;
         // this.lastSet = device_data.lastSet;
@@ -154,6 +164,9 @@ class Sensor extends events.EventEmitter {
             }
         });
     }
+    getDeviceClassesCapabilities() {
+        return Object.assign(deviceClasses.capabilities, Homey.manifest.capabilities)
+    }
 
     parsePayload() {
         var value = this.payload;
@@ -167,7 +180,9 @@ class Sensor extends events.EventEmitter {
             this.setCapability(defaultCapability);
             thisCapability = this.getCapabilityType()
         }
-        var capability = deviceClasses.capabilities[thisCapability];
+
+        var deviceCapabilityObj = this.getDeviceClassesCapabilities();
+        var capability = deviceCapabilityObj[thisCapability];
         if(capability) {
             switch(capability.type) {
                 case 'number':

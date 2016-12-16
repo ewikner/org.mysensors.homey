@@ -5,3 +5,7 @@ V1.0.0 - 2016-11-27
 	- Change that every node get it's own devicecard insted of every sensor have it's own devicecard 
 	- Added a autocompleter to all flow cards
 	- change some code to ES6
+	- Prepared to set title of a capability. It dose not work yet with the insight in Homey.
+	- Added two new capabilities boolean_get and boolean_set
+	- Removed special capabilities from deviceclasses.json instead combine the capabilities from deviceclasses.json and app.json.
+	- Change capability type for battery to use the built in battery instead. 

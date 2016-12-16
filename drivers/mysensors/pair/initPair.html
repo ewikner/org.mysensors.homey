@@ -225,6 +225,7 @@
 
 			if(sensor != null) {
 				$( "#sensorId" ).val(sensor.sensorId);
+				$( "#sensor_title").val(sensor.title);
 				$( "#sensor_types" ).val(sensor.sensorType);
 				var capability = sensor.capability;
 				if(capability != null) {
@@ -240,6 +241,7 @@
 			} else {
 				selectedSensor = null;
 				$( "#sensorId" ).val('');
+				$( "#sensor_title" ).val('');
 				$( "#sensor_types" ).val('');
 				$( "#sensor_capability" ).val('');
 			}
@@ -256,6 +258,7 @@
 				selectedSensor.new = false;
 			}
 			selectedSensor.sensorId = $( "#sensorId" ).val();
+			selectedSensor.title = $( "#sensor_title" ).val();
 			selectedSensor.sensorType = $( "#sensor_types" ).val();
 			selectedSensor.capability = $( "#sensor_capability" ).val();
 			if(selectedSensor.capability == '') {
@@ -365,6 +368,10 @@
 							<div id="sensorIDAlert" class="alert alert-danger"></div>
 							<label class="control-label" for="sensorId" data-i18n="pair.sensorForm.sensor_id"></label>
 							<input type="number" max="254" min="0" step="1" id="sensorId" value="" class="form-control" >
+						</div>
+						<div>
+							<label for="sensor_title" data-i18n="pair.sensorForm.title"></label>
+							<input type="text" id="sensor_title" value="" class="form-control">
 						</div>
 						<div>
 							<label for="sensor_types" data-i18n="pair.sensorForm.type"></label>

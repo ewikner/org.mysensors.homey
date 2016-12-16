@@ -105,6 +105,7 @@ class Node extends events.EventEmitter {
 				} else {
 					sensor.setSensorType(sensorData.sensorType);
 				}
+				sensor.setTitle(sensorData.title);
 				sensor.setCapability(sensorData.capability);
 
 			} else {
@@ -184,12 +185,10 @@ class Node extends events.EventEmitter {
 
 	triggerNodeSensorRealtimeUpdate(capability, payload) {
 		var node_device_data = this.getDeviceDataObject();
-
 		this.emit('nodeSensorRealtimeUpdate', node_device_data, capability, payload);
 	}
 
 	newSensor(sensorId, sensorType) {
-
 		var sensor = new Sensor(sensorId, sensorType);
 		this.addSensorsEventListener(sensor);
 
@@ -207,13 +206,33 @@ class Node extends events.EventEmitter {
 		}
 	}
 
-	getSensorCapabilities() {
+	getDeviceClassesCapabilities() {
+		return Object.assign(deviceClasses.capabilities, Homey.manifest.capabilities)
+	}
+
+	getSensorDeviceObj() {
 		var sensorCapabilities = [];
+		var capabilitiesOptions = {}
+
 		for(var sensorId in this.sensors) {
 			var sensor = this.getSensorById(sensorId);
+			var sensorTitle = sensor.getTitle();
 			var sesnorCapa = sensor.getCapability();
 			if(sesnorCapa != null) {
 				sensorCapabilities.push(sesnorCapa);
+				var optionsObj = {}
+
+				// Dose not work in Homey yet
+				//if(sensorTitle != '') {
+				//	optionsObj.title = sensorTitle
+				//}
+				if((sesnorCapa.indexOf('.') > -1)) {
+		            var sesnorCapaType = sesnorCapa.substring(0, sesnorCapa.indexOf('.'))
+		            if(sesnorCapaType == 'onoff') {
+		            	optionsObj.showTitle = true
+					}
+		        }
+				capabilitiesOptions[sesnorCapa] = optionsObj
 			}
 		}
 
@@ -221,13 +240,9 @@ class Node extends events.EventEmitter {
 			sensorCapabilities.push("measure_battery.255");
 		}
 
-		return sensorCapabilities;
-	}
-
-	getSensorMobileObj() {
 		//var _iconDir = "./drivers/mysensors/assets/icons/";
 		var _iconDir = "drivers/mysensors/assets/icons/";
-		var capabilitiesArr = this.getSensorCapabilities();
+		var capabilitiesArr = sensorCapabilities;
 
 		var mobileObj = {
 			components: [
@@ -243,6 +258,11 @@ class Node extends events.EventEmitter {
 		sensorObj.id = "sensor";
 		sensorObj.capabilities = [];
 		sensorObj.options = { icons: {}}
+
+		// number
+		var batteryObj = {};
+		batteryObj.id = "battery";
+		batteryObj.capabilities = [];
 
 		// number
 		var sliderObj = {};
@@ -272,12 +292,16 @@ class Node extends events.EventEmitter {
 			if((capability.indexOf('.') > -1)) {
 	            capabilityType = capability.substring(0, capability.indexOf('.'))
 	        }
-	        var deviceCapability = deviceClasses.capabilities[capabilityType];
+	        var deviceCapabilityObj = this.getDeviceClassesCapabilities();
+	        var deviceCapability = deviceCapabilityObj[capabilityType];
 	        var iconPath = _iconDir+capabilityType+".svg";
 	        if(!fileExists(iconPath)) {
 	        	iconPath = null;
 	        }
 	        switch(capabilityType) {
+	        	case 'measure_battery':
+	        		batteryObj.capabilities.push(capability);
+	        		break;
 	        	case 'onoff':
 					var toggleObj = {};
 					toggleObj.id = "toggle";
@@ -337,6 +361,9 @@ class Node extends events.EventEmitter {
 
 		}
 
+		if(batteryObj.capabilities.length > 0) {
+			mobileObj.components.push(batteryObj);
+		}
 		if(sensorObj.capabilities.length > 0) {
 			mobileObj.components.push(sensorObj);
 		}
@@ -353,7 +380,11 @@ class Node extends events.EventEmitter {
 			mobileObj.components.push(pickerObj);
 		}
 
-		return mobileObj;
+		var returnObj = {}
+		returnObj.capabilities = capabilitiesArr;
+		returnObj.mobile = mobileObj;
+		returnObj.capabilitiesOptions = capabilitiesOptions;
+		return returnObj;
 	}
 
 	addNodeToDevice() {
@@ -415,12 +446,15 @@ class Node extends events.EventEmitter {
 
 	createDeviceObject() {
 		var node_device_data = this.getDeviceDataObject();
+		var sensor_device_object = this.getSensorDeviceObj();
+
 		var node_device = {
 			data: node_device_data,
 			name: this.name,
 			class: this.getSensorClasses(),
-			capabilities: this.getSensorCapabilities(),
-			mobile: this.getSensorMobileObj()
+			capabilities: sensor_device_object.capabilities,
+			capabilitiesOptions: sensor_device_object.capabilitiesOptions,
+			mobile: sensor_device_object.mobile
 		};
 
 		return node_device;

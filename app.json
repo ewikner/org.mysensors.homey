@@ -51,6 +51,22 @@
             "getable": true,
             "setable": true
         },
+        "mysensors_boolean_get": {
+            "type": "boolean",
+            "title": {
+                "en": "Mysensor boolean get"
+            },
+            "getable": true,
+            "setable": false
+        },
+        "mysensors_boolean_set": {
+            "type": "boolean",
+            "title": {
+                "en": "Mysensor boolean set"
+            },
+            "getable": false,
+            "setable": true
+        },
         "mysensors_water_flow": {
             "type": "number",
             "title": {

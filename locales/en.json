@@ -47,6 +47,7 @@
 		},
 		"sensorForm" : {
 			"sensor_id": "Sensor ID",
+			"title": "Title",
 			"type": "Sensor Type",
 			"capability": "Sensor Capability",
 			"delete": "Delete",
