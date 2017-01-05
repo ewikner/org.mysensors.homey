@@ -15,7 +15,7 @@ exports.decodeMessage = (messageStr,splitChar) => {
     try {
         var messageType = this.types[messageArr[2]].value;
         var subType = messageType;
-        if((messageType == 'get') || (messageType == 'set')) {
+        if((messageType == 'req') || (messageType == 'set')) {
             subType = 'req_set';
         }
 
@@ -56,7 +56,7 @@ exports.encodeMessage = (messageObj,splitChar, gwType) => {
     encodedObj.push(messageObj.ack);
 
     var messageType = messageObj.messageType;
-    if((messageObj.messageType == 'get') || (messageObj.messageType == 'set')) {
+    if((messageObj.messageType == 'req') || (messageObj.messageType == 'set')) {
         messageType = 'req_set';
     }
     this[messageType].forEach((item, index) => {
