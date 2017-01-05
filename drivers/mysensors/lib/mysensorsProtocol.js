@@ -15,7 +15,7 @@ exports.decodeMessage = (messageStr,splitChar) => {
     try {
         var messageType = this.types[messageArr[2]].value;
         var subType = messageType;
-        if((messageType == 'get') || (messageType == 'set')) {
+        if((messageType == 'req') || (messageType == 'set')) {
             subType = 'req_set';
         }
 
@@ -56,7 +56,7 @@ exports.encodeMessage = (messageObj,splitChar, gwType) => {
     encodedObj.push(messageObj.ack);
 
     var messageType = messageObj.messageType;
-    if((messageObj.messageType == 'get') || (messageObj.messageType == 'set')) {
+    if((messageObj.messageType == 'req') || (messageObj.messageType == 'set')) {
         messageType = 'req_set';
     }
     this[messageType].forEach((item, index) => {
@@ -178,7 +178,7 @@ exports.req_set = [
     {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'socket', 'sub_type': 'onoff', 'parse_value': 'boolean'}},
     {'id': '3', 'value': 'V_PERCENTAGE',            'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': 'number'}},
     {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'number'}},
-    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'number'}},
+    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': ''}},
     {'id': '6', 'value': 'V_RAIN',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'number'}},
     {'id': '7', 'value': 'V_RAINRATE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'number'}},
     {'id': '8', 'value': 'V_WIND',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_wind_strength', 'parse_value': 'number'}},
