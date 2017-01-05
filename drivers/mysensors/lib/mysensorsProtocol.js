@@ -178,7 +178,7 @@ exports.req_set = [
     {'id': '2', 'value': 'V_STATUS',                'capabilities': {'type': 'socket', 'sub_type': 'onoff', 'parse_value': 'boolean'}},
     {'id': '3', 'value': 'V_PERCENTAGE',            'capabilities': {'type': 'light', 'sub_type': 'dim', 'parse_value': 'number'}},
     {'id': '4', 'value': 'V_PRESSURE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'number'}},
-    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': 'number'}},
+    {'id': '5', 'value': 'V_FORECAST',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_pressure', 'parse_value': ''}},
     {'id': '6', 'value': 'V_RAIN',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'number'}},
     {'id': '7', 'value': 'V_RAINRATE',              'capabilities': {'type': 'sensor', 'sub_type': 'measure_rain', 'parse_value': 'number'}},
     {'id': '8', 'value': 'V_WIND',                  'capabilities': {'type': 'sensor', 'sub_type': 'measure_wind_strength', 'parse_value': 'number'}},
