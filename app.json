@@ -123,14 +123,6 @@
                         "type": "autocomplete"
                     }
 
-                ],
-                "tokens": [
-                    {
-                        "name": "current_value",
-                        "title": { 
-                            "en": "Value"
-                        }
-                    }
                 ]
             },
             {
@@ -148,14 +140,6 @@
                         "name": "sensorId",
                         "type": "autocomplete"
                     }
-                ],
-                "tokens": [
-                    {
-                        "name": "current_value",
-                        "title": { 
-                            "en": "Value"
-                        }
-                    }
                 ]
             },
             {
@@ -172,14 +156,6 @@
                     {
                         "name": "sensorId",
                         "type": "autocomplete"
-                    }
-                ],
-                "tokens": [
-                    {
-                        "name": "current_value",
-                        "title": { 
-                            "en": "Value"
-                        }
                     }
                 ]
             }

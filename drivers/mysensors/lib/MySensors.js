@@ -67,7 +67,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	getDeviceClassesCapabilities() {
-	    return Object.assign(deviceClasses.capabilities, Homey.manifest.capabilities)
+		return Object.assign(deviceClasses.capabilities, Homey.manifest.capabilities)
 	}
 
 	initPair(data, callback ) {
@@ -114,6 +114,7 @@ class MySensors extends events.EventEmitter {
 
 	addedDevicePair(node_device, callback) {
 	    this.debugLog('addedDevicePair')
+
 	    var device_data = node_device.data;
 	    var node = this.getNodeById(device_data.nodeId);
 	    node.triggerSensorValue();
@@ -136,8 +137,10 @@ class MySensors extends events.EventEmitter {
 	}
 
 	getSetCapability(capability) {
+	    
 	    var specialFunctions = {
 	        get: ( device_data, callback ) => {
+	            
 	            var node = this.getNodeById(device_data.nodeId);
 	            if( typeof callback == 'function' ) {
 	            	var value = null;
@@ -154,7 +157,7 @@ class MySensors extends events.EventEmitter {
 	                        value = null;
 	                    }
 	            	}
-
+	            	
 	                callback( null, value);
 	            }
 	        },
@@ -309,6 +312,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	addMySensorsEventListener(node) {
+
 	    node.on('nodeSensorSendSetMessage', (message, callback) => {
 	        this.debugLog('MySensors.js nodeSensorSendSetMessage', message)
 	        this.sendSetMessage(message, callback);
@@ -420,6 +424,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	actionSet(args, callback) {
+
 	    var node = this.getNodeById(args.device.nodeId);
 	    if(node !== null) {
 		    var sensor = node.getSensorById(args.sensorId.sensorId);
@@ -450,6 +455,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	receivedAckMessage(messageObj) {
+
 		if ((messageObj.ack == 1) &&
 			(messageObj.nodeId == this.ack_nodeId) &&
 			(messageObj.sensorId == this.ack_sensorId) &&

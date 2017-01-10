@@ -35,6 +35,7 @@ function debugLog(message, data) {
 var self = module.exports = {
     init : (devices_data, callback) => {
 	    debugLog('init');
+
 	    showDebugLog = Homey.manager('settings').get('mys_show_debug');
 	    if(showDebugLog === undefined) {
 	    	showDebugLog = true;
@@ -70,12 +71,16 @@ var self = module.exports = {
 	                debugLog('! Realtime ERR 1: ',err);
 	                debugLog('! Realtime ERR 2: ',capability); 
 	                debugLog('! Realtime ERR 3: ',nodeDeviceData);
+	            } else {
+	            	debugLog('! Realtime capability: ', capability);
 	            }
 	        });
 	    })
 
 	    mySensor.on('nodeSensorTriggerValue', (eventName, sensor, nodeDeviceData, value) => {
-	        Homey.manager('flow').triggerDevice(eventName, { 'current_value': value }, { 'sensorId': sensor.sensorId  }, nodeDeviceData);
+	    	debugLog('! nodeSensorTriggerValue');
+	    	var tokens = {}
+	    	Homey.manager('flow').triggerDevice(eventName, tokens, { 'sensorId': sensor.sensorId  }, nodeDeviceData);
 	    })
 
 	    Homey.manager('settings').on('set', (varName) => {
@@ -155,6 +160,8 @@ var self = module.exports = {
 	},
 
 	triggerValue: (callback, args, state) => {
+		debugLog('FLOW = triggerValue args', args)
+		debugLog('FLOW = triggerValue state', state)
 		if(args.sensorId.sensorId == state.sensorId) {
         	callback( null, true );
         } else {

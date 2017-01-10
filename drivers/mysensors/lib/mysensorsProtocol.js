@@ -1,4 +1,4 @@
-exports.decodeMessage = (messageStr,splitChar) => {
+exports.decodeMessage = function (messageStr,splitChar) {
 
     if (!messageStr) {
         return null;
@@ -43,12 +43,12 @@ exports.decodeMessage = (messageStr,splitChar) => {
     return messageObj;
 };
 
-exports.encodeMessage = (messageObj,splitChar, gwType) => {
+exports.encodeMessage = function (messageObj,splitChar, gwType) {
     var encodedObj = [
         messageObj.nodeId,
         messageObj.sensorId
     ]
-    this.types.forEach((item, index) => {
+    this.types.forEach(function(item, index) {
         if(item.value == messageObj.messageType) {
             encodedObj.push(item.id);
         }
@@ -59,7 +59,7 @@ exports.encodeMessage = (messageObj,splitChar, gwType) => {
     if((messageObj.messageType == 'req') || (messageObj.messageType == 'set')) {
         messageType = 'req_set';
     }
-    this[messageType].forEach((item, index) => {
+    this[messageType].forEach(function(item, index) {
         if(item.value == messageObj.subType) {
             encodedObj.push(item.id);
         }
@@ -92,13 +92,13 @@ exports.encodeMessage = (messageObj,splitChar, gwType) => {
     return {'messageObj': messageObj, 'returnMessage': returnMessage};
 }
 
-exports.getCapabilities = (inputStr) => {
+exports.getCapabilities = function(inputStr) {
     var capabilities = null;
     if(inputStr) {
         var firstChar = inputStr.charAt(0);
 
         if(firstChar == 'S') {
-            this.presentation.forEach((item, index) => {
+            this.presentation.forEach(function(item, index) {
                 if(item.value == inputStr) {
                     if(item.variables.length > 0) {
                         inputStr = item.variables[0];
@@ -110,7 +110,7 @@ exports.getCapabilities = (inputStr) => {
             });
         }
 
-        this.req_set.forEach((item, index) => {
+        this.req_set.forEach(function(item, index) {
             if(item.value == inputStr) {
                 if(item.capabilities.sub_type != '') {
                     capabilities = item.capabilities;

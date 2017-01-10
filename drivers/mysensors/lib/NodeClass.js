@@ -223,9 +223,9 @@ class Node extends events.EventEmitter {
 				var optionsObj = {}
 
 				// Dose not work in Homey yet
-				//if(sensorTitle != '') {
-				//	optionsObj.title = sensorTitle
-				//}
+				// if(sensorTitle != '') {
+				// 	optionsObj.title = sensorTitle
+				// }
 				if((sesnorCapa.indexOf('.') > -1)) {
 		            var sesnorCapaType = sesnorCapa.substring(0, sesnorCapa.indexOf('.'))
 		            if(sesnorCapaType == 'onoff') {
@@ -292,12 +292,14 @@ class Node extends events.EventEmitter {
 			if((capability.indexOf('.') > -1)) {
 	            capabilityType = capability.substring(0, capability.indexOf('.'))
 	        }
+	        
 	        var deviceCapabilityObj = this.getDeviceClassesCapabilities();
 	        var deviceCapability = deviceCapabilityObj[capabilityType];
 	        var iconPath = _iconDir+capabilityType+".svg";
 	        if(!fileExists(iconPath)) {
 	        	iconPath = null;
 	        }
+	        iconPath = null;
 	        switch(capabilityType) {
 	        	case 'measure_battery':
 	        		batteryObj.capabilities.push(capability);
