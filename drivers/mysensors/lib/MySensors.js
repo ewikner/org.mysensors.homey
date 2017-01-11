@@ -644,16 +644,41 @@ class MySensors extends events.EventEmitter {
 	}
 
 	mySensorMessageLog(message) {
+		this.messageLog = Homey.manager('settings').get('mySensorMessageLog');
+
 		if (!this.messageLog) {
 			this.messageLog = [];
 		}
 
 		this.debugLog(message);
 
-		Homey.manager('api').realtime('mySensorMessageLog', message);
+        var newRow = {
+            "Timestamp": new Date(message.debugObj.t),
+            "Direction": message.direction,
+            "Node": message.nodeId,
+            "Sensor": message.sensorId,
+            "Type": message.messageType,
+            "Ack": message.ack,
+            "MessageType": message.subType,
+            "Payload": message.payload,
+            "Debug": message.debugObj.s,
+        };
 
-		this.messageLog.push(message);
+        this.messageLog.push(newRow);
+
+		var messageLogCount = parseInt(Homey.manager('settings').get('myMessageLogCount'));
+		if(!messageLogCount) {
+			messageLogCount = 5000;
+		}
+		var sendRealTimeEvent = 'newMySensorMessage';
+
+		if (this.messageLog.length > messageLogCount) {
+			this.messageLog.splice(0, this.messageLog.length - messageLogCount);
+			sendRealTimeEvent = 'reloadMySensorMessage';
+		}
+		
 		Homey.manager('settings').set('mySensorMessageLog', this.messageLog);
+		Homey.manager('api').realtime(sendRealTimeEvent, newRow);
 	}
 
 	debugLog(message, data) {

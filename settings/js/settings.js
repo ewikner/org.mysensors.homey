@@ -9,6 +9,16 @@ angular.module('settingsApp', []).controller('settingsCtrl', ['$scope', '$timeou
       });
   };
 
+  $scope.myMessageLogCountChange = function() {
+      Homey.set('myMessageLogCount', $scope.myMessageLogCount, function(err, value) {
+        if (!err) {
+          $scope.displayMessage(__('settings.change_myMessageLogCount'));
+        } else {
+          console.log(err)
+        }
+      });
+  };
+
   $scope.displayMessage = function(text) {
     if ($scope.msgPromise != null) {
       $timeout.cancel($scope.msgPromise);
@@ -48,10 +58,18 @@ angular.module('settingsApp', []).controller('settingsCtrl', ['$scope', '$timeou
     });
 
     Homey.get('mys_show_debug', function(err, value) {
+      if (err) { 
+        return console.error('Could not get settings', err);
+      }
+      $scope.mys_show_debug = value;
+      $scope.$apply();
+    });
+
+    Homey.get('myMessageLogCount', function(err, value) {
         if (err) { 
           return console.error('Could not get settings', err);
         }
-        $scope.mys_show_debug = value;
+        $scope.myMessageLogCount = value;
         $scope.$apply();
       });
   }
@@ -64,9 +82,10 @@ angular.module('messageLog', ['ui.grid']).controller('messageLogCtrl', ['$scope'
 
     $scope.gridOptions = {
         data: mydata,
+        flatEntityAccess: true,
         enableColumnResizing: false,
         columnDefs: [
-            { name: 'Timestamp', enableSorting: true, enableColumnMenu: false,width: 200, sort: {direction: uiGridConstants.DESC,priority: 1}},
+            { name: 'Timestamp', enableSorting: true, enableColumnMenu: false,width: 200, type:'date', cellFilter: 'date:"yyyy-MM-dd hh:mm:ss"',sort: {direction: uiGridConstants.DESC,priority: 1}},
             { name: 'Direction', enableSorting: false, enableColumnMenu: false, width: 80 },
             { name: 'Node', enableSorting: false, enableColumnMenu: false, width: 80 },
             { name: 'Sensor', enableSorting: false, enableColumnMenu: false, width: 100},
@@ -82,24 +101,16 @@ angular.module('messageLog', ['ui.grid']).controller('messageLogCtrl', ['$scope'
     };
 
     $scope.addNewMessage = function(data) {
-        var timeStamp = new Date(data.debugObj.t).toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        var newRow = {
-            "Timestamp": timeStamp,
-            "Direction": data.direction,
-            "Node": data.nodeId,
-            "Sensor": data.sensorId,
-            "Type": data.messageType,
-            "Ack": data.ack,
-            "MessageType": data.subType,
-            "Payload": data.payload,
-            "Debug": data.debugObj.s,
-        };
-        $scope.gridOptions.data.push(newRow);
+        $scope.gridOptions.data.push(data);
+        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.ALL);
+    };
+    $scope.addMessageList = function(data) {
+        $scope.gridOptions.data = data;
         $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.ALL);
     };
     $scope.clearData = function() {
         $scope.gridOptions.data = [];
-        var timeStamp = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        var timeStamp = new Date();
         var newRow = {
             "Timestamp": timeStamp,
             "Direction": 'CLEARLOG',
@@ -118,8 +129,13 @@ angular.module('messageLog', ['ui.grid']).controller('messageLogCtrl', ['$scope'
 
 function initMessageLog () {
   loadMessageLogFromSettings()
-  Homey.on('mySensorMessageLog', function (data) {
+
+  Homey.on('newMySensorMessage', function (data) {
     $("#messageLogGrid").scope().addNewMessage(data);
+  })
+
+  Homey.on('reloadMySensorMessage', function (data) {
+    loadMessageLogFromSettings();
   })
 }
 
@@ -129,9 +145,7 @@ function loadMessageLogFromSettings () {
       return console.error(error)
     }
     if (value != null) {
-      $.each(value, function (index, data) {
-        $("#messageLogGrid").scope().addNewMessage(data);
-      })
+      $("#messageLogGrid").scope().addMessageList(value);
     }
   })
 }
@@ -142,6 +156,7 @@ function clearLog() {
     $("#messageLogGrid").scope().clearData();
   });
 }
+
 function onHomeyReady(){
   $(".message").hide();
   initMessageLog();

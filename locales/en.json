@@ -9,9 +9,12 @@
 		"messagebar": {
 			"legend": "Message"
 		},
+		"clearLogBtn": "Clear message log",
 		"clearLog": "You have now cleared the log",
 		"mys_show_debug": "Show debug log to console",
 		"change_mys_show_debug": "Change debug setting",
+		"myMessageLogCount": "Number of messages in log",
+		"change_myMessageLogCount": "Change maximum number messages in log",
 		"form": {
 			"legend": "Settings",
 			"gatewayType": "Connection type",

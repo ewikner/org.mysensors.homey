@@ -150,7 +150,7 @@ var self = module.exports = {
         if(node !== null) {
 	        var sensor = node.getSensorById(args.sensorId.sensorId);
 	        if(sensor !== null) {
-		        callback( null, (testValue === sensor.getPayload()) );
+		        callback( null, (testValue === sensor.parsePayload()) );
 		    } else {
 		    	callback( null, false);
 		    }

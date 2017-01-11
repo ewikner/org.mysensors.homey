@@ -53,11 +53,25 @@
             </div>
           </div>
           <h4 data-i18n="settings.h4"></h1>
-          <div class="form-group">
-            <div class="checkbox">
-              <label><input id="mys_show_debug" type="checkbox" ng-model="mys_show_debug" ng-change="showDebugChange()"><div data-i18n="settings.mys_show_debug"></div></label>
+          <form id="mysLogSettings" class="form-horizontal">
+            <div class="form-group">
+              <label class="control-label col-sm-3" for="mys_show_debug" data-i18n="settings.mys_show_debug"></label>
+              <div class="col-sm-2">
+                <input id="mys_show_debug" type="checkbox" ng-model="mys_show_debug" ng-change="showDebugChange()"/>
+              </div>
             </div>
-          </div>
+            <div class="form-group">
+              <label class="control-label col-sm-3" for="myMessageLogCount" data-i18n="settings.myMessageLogCount"></label>
+              <div class="col-sm-2">
+                <input class="form-control" id="myMessageLogCount" ng-model="myMessageLogCount" value="5000" ng-pattern="/^\d+$/" ng-change="myMessageLogCountChange()" />
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-3 col-sm-2">
+                <button type="button" id="clearLogBtn" class="btn btn-default" onclick="clearLog()" data-i18n="settings.clearLogBtn"></button>
+              </div>
+            </div>
+          </form>
           <p  data-i18n="settings.p"></p>
           <!--
           <fieldset id="message" class="message">
@@ -68,7 +82,8 @@
           </fieldset>
           -->
         
-            <form name="mysSettings" class="form-horizontal">
+            <form id="mysSettings" name="mysSettings" class="form-horizontal">
+              
               <div class="form-group">
                 <label class="control-label col-sm-2" data-i18n="settings.form.gatewayType"></label>
                 <div class="col-sm-4">
@@ -124,7 +139,7 @@
                       <input class="form-control" id="ethernet_port" ng-model="settings.ethernet_port" placeholder="5003" required />
                     </div>
                   </div> 
-                   <div class="form-group">
+                  <div class="form-group">
                       <label class="control-label col-sm-2" for="timeout" data-i18n="settings.form.timeout"></label>
                       <div class="col-sm-4">
                         <input class="form-control" id="timeout" ng-model="settings.timeout" value="60000" ng-pattern="/^\d+$/" />
@@ -145,9 +160,6 @@
     <div id="messageLog" class="tab-pane fade">
       <div ng-controller="messageLogCtrl">
         <div id="messageLogGrid" ui-grid="gridOptions" class="messageLogGrid"></div>
-      </div>
-      <div class="form-group">  
-        <button type="button" id="clearLogBtn" class="btn btn-default" onclick="clearLog()">Clear log</button>
       </div>
     </div>
   </div>
