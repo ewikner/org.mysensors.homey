@@ -85,7 +85,7 @@ angular.module('messageLog', ['ui.grid']).controller('messageLogCtrl', ['$scope'
         flatEntityAccess: true,
         enableColumnResizing: false,
         columnDefs: [
-            { name: 'Timestamp', enableSorting: true, enableColumnMenu: false,width: 200, type:'date', cellFilter: 'date:"yyyy-MM-dd hh:mm:ss"',sort: {direction: uiGridConstants.DESC,priority: 1}},
+            { name: 'Timestamp', enableSorting: true, enableColumnMenu: false,width: 200, type:'date', cellFilter: 'date:"yyyy-MM-dd HH:mm:ss"',sort: {direction: uiGridConstants.DESC,priority: 1}},
             { name: 'Direction', enableSorting: false, enableColumnMenu: false, width: 80 },
             { name: 'Node', enableSorting: false, enableColumnMenu: false, width: 80 },
             { name: 'Sensor', enableSorting: false, enableColumnMenu: false, width: 100},
