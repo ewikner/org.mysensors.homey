@@ -146,6 +146,8 @@ class MySensors extends events.EventEmitter {
 	            	var value = null;
 	            	if((node.getShowBatteryLevel()) && (capability == 'measure_battery.255')) {
 		                value = node.getBatteryLevel();
+	            	} else if((node.getShowLastSeen()) && (capability == 'mysensors_lastseen.255')) {
+		                value = node.getLastSeen();
 	            	} else {
 	                    var sensor = node.getSensorByCapability(capability);
 	                    if(sensor != null) {
@@ -167,7 +169,9 @@ class MySensors extends events.EventEmitter {
 	                var node = this.getNodeById(device_data.nodeId);
 	                if((node.getShowBatteryLevel()) && (capability == 'measure_battery.255')) {
 	                    node.setShowBatteryLevel(value);
-	                } else {
+	                } else if((node.getShowLastSeen()) && (capability == 'mysensors_lastseen.255')) {
+		                node.setLastSeen(value);
+	            	} else {
 	                    var sensor = node.getSensorByCapability(capability);
 	                    if(sensor != null) {
 	                        sensor.setPayloadFromCapabilitySet(value);
@@ -488,6 +492,7 @@ class MySensors extends events.EventEmitter {
 	handlePresentation(message) {
 	    this.debugLog('----- presentation -------')
 	    var node = this.getNodeById(message.nodeId);
+	    node.setLastSeen();
 	    var sensor = node.getSensorById(message.sensorId);
 
 	    if(sensor === undefined) {
@@ -517,6 +522,7 @@ class MySensors extends events.EventEmitter {
 
 	    if(handleThisMessage) {
 		    var node = this.getNodeById(message.nodeId);
+		    node.setLastSeen();
 		    var sensor = node.getSensorFromMessage(message);
 
 		    if(sensor != null) {
@@ -529,6 +535,7 @@ class MySensors extends events.EventEmitter {
 	handleReq(message) {
 	    this.debugLog('----- req -------')
 	    var node = this.getNodeById(message.nodeId);
+	    node.setLastSeen();
 	    var sensor = node.getSensorFromMessage(message);
 
 	    if(sensor != null) {
@@ -549,6 +556,7 @@ class MySensors extends events.EventEmitter {
 	    switch(message.subType) {
 	        case 'I_BATTERY_LEVEL': 
 	            var node = this.getNodeById(message.nodeId);
+	            node.setLastSeen();
 	            node.setBatteryLevel(message.payload);
 	            break;
 	        case 'I_TIME':
@@ -564,6 +572,7 @@ class MySensors extends events.EventEmitter {
 	        case 'I_VERSION': 
 	            if(message.nodeId > 0) {
 	                var node = this.getNodeById(message.nodeId);
+	                node.setLastSeen();
 	                node.setVersion(message.payload);
 	            }
 	            break;
@@ -588,10 +597,12 @@ class MySensors extends events.EventEmitter {
 	        case 'I_CHILDREN': break;
 	        case 'I_SKETCH_NAME': 
 	            var node = this.getNodeById(message.nodeId);
+	            node.setLastSeen();
 	            node.setSketchName(message.payload);
 	            break;
 	        case 'I_SKETCH_VERSION': 
 	            var node = this.getNodeById(message.nodeId);
+	            node.setLastSeen();
 	            node.setSketchVersion(message.payload);
 	            break;
 	        case 'I_REBOOT': break;

@@ -13,6 +13,8 @@ class Node extends events.EventEmitter {
 		this.type = '';
 		this.batteryLevel = 100;
 		this.showBatteryLevel = false;
+		this.lastSeen = '0000-00-00 00:00:00';
+		this.showLastSeen = false;
 		this.sketchName = '';
 		this.sketchVersion = '';
 		this.version = '';
@@ -78,6 +80,44 @@ class Node extends events.EventEmitter {
         return newValue;
 	}
 
+	getShowLastSeen() {
+		return this.showLastSeen;
+	}
+
+	setShowLastSeen(value) {
+		this.showLastSeen = value;
+	}
+
+	getLastSeen() {
+		return this.lastSeen;
+	}
+
+	setLastSeen() {
+		var date = new Date();
+
+	    var hour = date.getHours();
+	    hour = (hour < 10 ? "0" : "") + hour;
+
+	    var min  = date.getMinutes();
+	    min = (min < 10 ? "0" : "") + min;
+
+	    var sec  = date.getSeconds();
+	    sec = (sec < 10 ? "0" : "") + sec;
+
+	    var year = date.getFullYear();
+
+	    var month = date.getMonth() + 1;
+	    month = (month < 10 ? "0" : "") + month;
+
+	    var day  = date.getDate();
+	    day = (day < 10 ? "0" : "") + day;
+
+		this.lastSeen = year + "-" + month + "-" + day + "_" + hour + ":" + min + ":" + sec;
+		if (this.showLastSeen) {
+			this.triggerNodeSensorRealtimeUpdate("mysensors_lastseen.255", this.lastSeen);
+		}
+	}
+
 	setVersion(value) {
 		this.version = value;
 	}
@@ -92,6 +132,7 @@ class Node extends events.EventEmitter {
 
 	saveNodeFromPair(data, callback) {
 		this.name = data.name;
+		this.showLastSeen = data.showLastSeen;
 		this.showBatteryLevel = data.showBatteryLevel;
 		this.sendAck = data.sendAck;
 
@@ -197,6 +238,7 @@ class Node extends events.EventEmitter {
 	}
 
 	newSensor(sensorId, sensorType) {
+
 		var sensor = new Sensor(sensorId, sensorType);
 		this.addSensorsEventListener(sensor);
 
@@ -246,6 +288,9 @@ class Node extends events.EventEmitter {
 
 		if (this.showBatteryLevel) {
 			sensorCapabilities.push("measure_battery.255");
+		}
+		if (this.showLastSeen) {
+			sensorCapabilities.push("mysensors_lastseen.255");
 		}
 
 		//var _iconDir = "./drivers/mysensors/assets/icons/";
@@ -300,7 +345,7 @@ class Node extends events.EventEmitter {
 			if((capability.indexOf('.') > -1)) {
 	            capabilityType = capability.substring(0, capability.indexOf('.'))
 	        }
-	        
+
 	        var deviceCapabilityObj = this.getDeviceClassesCapabilities();
 	        var deviceCapability = deviceCapabilityObj[capabilityType];
 	        var iconPath = _iconDir+capabilityType+".svg";
@@ -419,6 +464,7 @@ class Node extends events.EventEmitter {
 			nodeId: this.nodeId,
 			//type: this.type,
 			//batteryLevel: this.batteryLevel,
+			showLastSeen: this.showLastSeen,
 			showBatteryLevel: this.showBatteryLevel,
 			//sketchName: this.sketchName,
 			//sketchVersion: this.sketchVersion,
@@ -435,6 +481,7 @@ class Node extends events.EventEmitter {
 		this.nodeId = device_data.nodeId;
 		//this.type = device_data.type;
 		//this.batteryLevel = device_data.batteryLevel;
+		this.showLastSeen = device_data.showLastSeen;
 		this.showBatteryLevel = device_data.showBatteryLevel;
 		//this.sketchName = device_data.sketchName;
 		//this.sketchVersion = device_data.sketchVersion;

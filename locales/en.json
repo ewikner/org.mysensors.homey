@@ -42,6 +42,7 @@
 		
 		"nodeForm": {
 			"name": "Node name",
+			"lastseen": "Show Last Seen",
 			"battery": "Show Battery Level",
 			"ack": "Send Ack",
 			"newSensor": "New Sensor",

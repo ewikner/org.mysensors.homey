@@ -26,6 +26,14 @@
         "small": "assets/images/small.png"
     },
     "capabilities": {
+        "mysensors_lastseen": {
+            "type": "string",
+            "title": {
+                "en": "Last seen"
+            },
+            "getable": true,
+            "setable": true
+        },
         "mysensors_custom": {
             "type": "string",
             "title": {

@@ -77,6 +77,7 @@
 			selectedNode = $(row).data('data');
 
 			$( "#node_name" ).val(selectedNode.name);
+			$( "#node_show_lastseen" ).prop('checked', selectedNode.showLastSeen);
 			$( "#node_show_battery" ).prop('checked', selectedNode.showBatteryLevel);
 			$( "#node_send_ack" ).prop('checked', selectedNode.sendAck);
 
@@ -160,6 +161,7 @@
 
 		function addNode() {
 			selectedNode.name = $( "#node_name" ).val();
+			selectedNode.showLastSeen = $( "#node_show_lastseen" ).is(":checked");
 			selectedNode.showBatteryLevel = $( "#node_show_battery" ).is(":checked");
 			selectedNode.sendAck = $( "#node_send_ack" ).is(":checked");
 
@@ -335,6 +337,9 @@
 			    		<div id="nodeAlert" class="alert alert-danger"></div>
 						<label for="node_name" data-i18n="pair.nodeForm.name"></label>
 						<input type="text" id="node_name" value="" class="form-control">
+						<div class="checkbox">
+					    	<label><input name="node_show_lastseen" id="node_show_lastseen" type="checkbox" value="" ><div data-i18n="pair.nodeForm.lastseen"></div></label>
+					    </div>
 						<div class="checkbox">
 					    	<label><input name="node_show_battery" id="node_show_battery" type="checkbox" value="" ><div data-i18n="pair.nodeForm.battery"></div></label>
 					    </div>
