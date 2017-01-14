@@ -120,6 +120,14 @@ class Node extends events.EventEmitter {
 		return this.sensors;
 	}
 
+	getNumSensors() {
+		var numSensors = 0;
+		for(var sensorId in this.sensors) {
+			numSensors++
+		}
+		return numSensors;
+	}
+
 	getSensorById(sensorId) {
 		var sensor = this.sensors[sensorId];
 		return sensor;

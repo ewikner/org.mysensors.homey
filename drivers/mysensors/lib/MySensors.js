@@ -75,14 +75,14 @@ class MySensors extends events.EventEmitter {
 	    var devices = [];
 
 	    for(var nodeId in this.nodes){
-	    	if(nodeId > 0) {
-		        var node = this.getNodeById(nodeId);
-		        if(node !== undefined) {
-		            if(!node.getIsAdded()) {
-		            	devices.push(node);
-		            }
-		        }
-		    }
+	        var node = this.getNodeById(nodeId);
+	        if(node !== undefined) {
+	            if(!node.getIsAdded()) {
+					if(node.getNumSensors() > 0) {
+						devices.push(node);
+					}
+	            }
+	        }
 	    }
 	    var extra = {};
 	    extra.mysensors_types = mysensorsProtocol.req_set;
