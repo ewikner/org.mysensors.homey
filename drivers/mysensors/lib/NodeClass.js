@@ -112,9 +112,9 @@ class Node extends events.EventEmitter {
 	    var day  = date.getDate();
 	    day = (day < 10 ? "0" : "") + day;
 
-		this.lastSeen = year + "-" + month + "-" + day + "_" + hour + ":" + min + ":" + sec;
+		this.lastSeen = " "+year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
 		if (this.showLastSeen) {
-			this.triggerNodeSensorRealtimeUpdate("mysensors_lastseen.255", this.lastSeen);
+			this.triggerNodeSensorRealtimeUpdate("mysensors_lastseen.255", this.lastSeen.toString());
 		}
 	}
 
@@ -263,6 +263,7 @@ class Node extends events.EventEmitter {
 	getSensorDeviceObj() {
 		var sensorCapabilities = [];
 		var capabilitiesOptions = {}
+		var _iconDir = "./drivers/mysensors/assets/icons/";
 
 		for(var sensorId in this.sensors) {
 			var sensor = this.getSensorById(sensorId);
@@ -276,12 +277,6 @@ class Node extends events.EventEmitter {
 				// if(sensorTitle != '') {
 				// 	optionsObj.title = sensorTitle
 				// }
-				if((sesnorCapa.indexOf('.') > -1)) {
-		            var sesnorCapaType = sesnorCapa.substring(0, sesnorCapa.indexOf('.'))
-		            if(sesnorCapaType == 'onoff') {
-		            	optionsObj.showTitle = true
-					}
-		        }
 				capabilitiesOptions[sesnorCapa] = optionsObj
 			}
 		}
@@ -293,8 +288,6 @@ class Node extends events.EventEmitter {
 			sensorCapabilities.push("mysensors_lastseen.255");
 		}
 
-		//var _iconDir = "./drivers/mysensors/assets/icons/";
-		var _iconDir = "drivers/mysensors/assets/icons/";
 		var capabilitiesArr = sensorCapabilities;
 
 		var mobileObj = {
@@ -352,7 +345,7 @@ class Node extends events.EventEmitter {
 	        if(!fileExists(iconPath)) {
 	        	iconPath = null;
 	        }
-	        iconPath = null;
+
 	        switch(capabilityType) {
 	        	case 'measure_battery':
 	        		batteryObj.capabilities.push(capability);
@@ -362,6 +355,7 @@ class Node extends events.EventEmitter {
 					toggleObj.id = "toggle";
 					toggleObj.capabilities = [];
 					toggleObj.options = { icons: {}}
+					toggleObj.options.showTitle = true
 		        	if(iconPath != null) {
 			        	toggleObj.options.icons[capability] = iconPath;
 			        }
