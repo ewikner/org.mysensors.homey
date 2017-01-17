@@ -1,4 +1,4 @@
-V1.0.0 - 2016-11-27
+V1.0.0 - 2017-01-17
 	- Refactoring code
 	- Added a message list in settings view
 	- Added ACK support
@@ -9,3 +9,10 @@ V1.0.0 - 2016-11-27
 	- Added two new capabilities boolean_get and boolean_set
 	- Removed special capabilities from deviceclasses.json instead combine the capabilities from deviceclasses.json and app.json.
 	- Change capability type for battery to use the built in battery instead. 
+	- Possibility to change title of a capability
+	- Added some icons for custom capabilities
+	- Added a lastseen capability
+	- Bugfix flowcards values
+	- Bugfix data format in log.
+	- Fix problem with loading large logs
+	- Removed tokens in the flowcards, use the global tokens insted

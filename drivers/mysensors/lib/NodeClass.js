@@ -9,6 +9,7 @@ class Node extends events.EventEmitter {
 	constructor(nodeId) {
 		super();
 
+		this.id = nodeId;
 		this.nodeId = nodeId;
 		this.type = '';
 		this.batteryLevel = 100;
@@ -112,7 +113,8 @@ class Node extends events.EventEmitter {
 	    var day  = date.getDate();
 	    day = (day < 10 ? "0" : "") + day;
 
-		this.lastSeen = " "+year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+		this.lastSeen = ""+year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+		
 		if (this.showLastSeen) {
 			this.triggerNodeSensorRealtimeUpdate("mysensors_lastseen.255", this.lastSeen.toString());
 		}
@@ -273,10 +275,9 @@ class Node extends events.EventEmitter {
 				sensorCapabilities.push(sesnorCapa);
 				var optionsObj = {}
 
-				// Dose not work in Homey yet
-				// if(sensorTitle != '') {
-				// 	optionsObj.title = sensorTitle
-				// }
+				if(sensorTitle != '') {
+					optionsObj.title = sensorTitle
+				}
 				capabilitiesOptions[sesnorCapa] = optionsObj
 			}
 		}
@@ -455,6 +456,7 @@ class Node extends events.EventEmitter {
 
 	getDeviceDataObject() {
 		var node_device_data = {
+			id: this.nodeId,
 			nodeId: this.nodeId,
 			//type: this.type,
 			//batteryLevel: this.batteryLevel,
@@ -472,6 +474,7 @@ class Node extends events.EventEmitter {
 	}
 
 	setDeviceDataObject(device_data) {
+		this.id = device_data.id;
 		this.nodeId = device_data.nodeId;
 		//this.type = device_data.type;
 		//this.batteryLevel = device_data.batteryLevel;
