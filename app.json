@@ -1,7 +1,7 @@
 {
     "id": "org.mysensors.homey",
     "version": "1.0.0-beta1",
-    "compatibility": ">=1.0.1",
+    "compatibility": ">=1.1.3",
     "name": {
         "en": "Mysensors.org"
     },
@@ -29,7 +29,7 @@
         "mysensors_lastseen": {
             "type": "string",
             "title": {
-                "en": "Last seen"
+                "en": "Last Seen"
             },
             "getable": true,
             "setable": true
