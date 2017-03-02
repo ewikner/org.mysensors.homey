@@ -45,7 +45,7 @@ class Sensor extends events.EventEmitter {
     getDeviceDataObject() {
         var sensor_device = {
             sensorId: this.sensorId,
-            sensorType: this.sensorType,
+            //sensorType: this.sensorType,
             title: this.title,
             // payload: this.payload,
             // payloadType: this.payloadType,
@@ -59,7 +59,7 @@ class Sensor extends events.EventEmitter {
 
     setDeviceDataObject(device_data) {
         this.sensorId = device_data.sensorId;
-        this.sensorType = device_data.sensorType;
+        //this.sensorType = device_data.sensorType;
         this.title = device_data.title;
         // this.payload = device_data.payload;
         // this.payloadType = device_data.payloadType;
