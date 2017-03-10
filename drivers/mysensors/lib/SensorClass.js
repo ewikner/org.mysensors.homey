@@ -39,7 +39,9 @@ class Sensor extends events.EventEmitter {
     }
 
     setSensorType(value) {
-        this.sensorType = value;
+        if(value.charAt(0) == 'V') {
+            this.sensorType = value;
+        }
     }
 
     getDeviceDataObject() {
