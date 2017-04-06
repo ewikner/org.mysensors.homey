@@ -1,11 +1,10 @@
-V1.0.0 - 2017-01-17
+V0.2.0 - 2017-03-06
 	- Refactoring code
 	- Added a message list in settings view
 	- Added ACK support
 	- Change that every node get it's own devicecard insted of every sensor have it's own devicecard 
-	- Added a autocompleter to all flow cards
-	- change some code to ES6
-	- Prepared to set title of a capability. It dose not work yet with the insight in Homey.
+	- Added a autocomplete to all flow cards
+	- Change some code to ES6
 	- Added two new capabilities boolean_get and boolean_set
 	- Removed special capabilities from deviceclasses.json instead combine the capabilities from deviceclasses.json and app.json.
 	- Change capability type for battery to use the built in battery instead. 
@@ -15,4 +14,4 @@ V1.0.0 - 2017-01-17
 	- Bugfix flowcards values
 	- Bugfix data format in log.
 	- Fix problem with loading large logs
-	- Removed tokens in the flowcards, use the global tokens insted
+	- Removed tokens in the flowcards, use the global tokens instead

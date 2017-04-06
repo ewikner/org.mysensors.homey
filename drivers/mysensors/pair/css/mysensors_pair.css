@@ -1,0 +1,26 @@
+.icon-mys {
+    background-image: url("/app/org.mysensors.homey/drivers/mysensors/assets/icon.svg");
+    display: inline-block;
+    vertical-align: middle;
+    width: 2em;
+    height: 2em;
+    margin-right: .15em;
+}
+.label_padding {
+	display: inline-block;
+    vertical-align: middle;
+    border-left: 1px solid rgba(0,0,0,0.05);
+    font-size: .9em;
+    text-shadow: 0 1px 0 white;
+    padding-left: .5em;
+}
+.checkbox_label {
+    padding-left: 10px;
+}
+/* Important part */
+.modal-dialog{
+    overflow-y: initial !important
+}
+.modal-body{
+    overflow-y: auto;
+}

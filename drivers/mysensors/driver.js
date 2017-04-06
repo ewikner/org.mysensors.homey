@@ -71,8 +71,6 @@ var self = module.exports = {
 	                debugLog('! Realtime ERR 1: ',err);
 	                debugLog('! Realtime ERR 2: ',capability); 
 	                debugLog('! Realtime ERR 3: ',nodeDeviceData);
-	            } else {
-	            	debugLog('! Realtime capability: ', capability);
 	            }
 	        });
 	    })
