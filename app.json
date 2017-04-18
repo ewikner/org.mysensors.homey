@@ -79,11 +79,11 @@
             "getable": false,
             "setable": true
         },
-        "mysensors_water_flow": {
+        "mysensors_water_flow_hour": {
             "type": "number",
             "title": {
-                "en": "Water flow",
-                "nl": "Watergebruik"
+                "en": "Water flow per hour",
+                "nl": "Watergebruik per uur"
             },
             "units": {
                 "en": "L/h"
@@ -91,6 +91,24 @@
             "desc": {
                 "en": "Water flow in liters per hour",
                 "nl": "Watergebruik in liters per uur"
+            },
+            "chartType": "stepLine",
+            "decimals": 2,
+            "getable": true,
+            "setable": false
+        },
+        "mysensors_water_flow_min": {
+            "type": "number",
+            "title": {
+                "en": "Water flow per minute",
+                "nl": "Watergebruik per minuut"
+            },
+            "units": {
+                "en": "L/min"
+            },
+            "desc": {
+                "en": "Water flow in liters per minute",
+                "nl": "Watergebruik in liters per minuut"
             },
             "chartType": "stepLine",
             "decimals": 2,
