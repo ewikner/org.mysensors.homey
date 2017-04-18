@@ -12,7 +12,7 @@ If you still want to make a donation I can build more sensors to use in the app.
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CGEGVFND9E532)
 
 ### Version history
-* 0.2.0 Magor change of the app. Se more in CHANGELOG
+* 0.2.0 Magor change of the app. See more in CHANGELOG
 * 0.1.8 Merge from terryhendrix, added Water flow
 * 0.1.7 Change to handle the new results from the getCapabilities function because Athom have change it in 0.10. 
 * 0.1.6 Updates for Homey version: 0.10.0 
