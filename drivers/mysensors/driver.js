@@ -176,7 +176,13 @@ var self = module.exports = {
 
 	triggerAutocomplete: ( callback, args) => {
     	var resultArray = [];
-    	var node = mySensor.getNodeById(args.args.device.data.nodeId);
+    	let nodeId;
+    	if(args.args.device.hasOwnProperty('data')) {
+    		nodeId = args.args.device.data.nodeId;
+    	} else {
+    		nodeId = args.args.device.nodeId;
+    	}
+    	var node = mySensor.getNodeById(nodeId);
     	var sensors = node.getSensors();
 
     	if( Object.keys( sensors ).length < 1 ) {
