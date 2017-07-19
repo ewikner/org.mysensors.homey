@@ -176,7 +176,7 @@ var self = module.exports = {
 
 	triggerAutocomplete: ( callback, args) => {
     	var resultArray = [];
-    	let nodeId;
+    	var nodeId;
     	if(args.args.device.hasOwnProperty('data')) {
     		nodeId = args.args.device.data.nodeId;
     	} else {
