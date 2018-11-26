@@ -1,4 +1,6 @@
-angular.module('settingsApp', []).controller('settingsCtrl', ['$scope', '$timeout', function($scope, $timeout) {
+
+angular.module('settingsApp', []).controller('settingsCtrl', ['$scope', '$timeout', function($scope, $timeout) { 
+ 
   $scope.showDebugChange = function() {
       Homey.set('mys_show_debug', $scope.mys_show_debug, function(err, value) {
         if (!err) {
@@ -157,11 +159,11 @@ function clearLog() {
   });
 }
 
-function onHomeyReady(){
+function onHomeyReady( homey ){
+  Homey=homey;
+  Homey.ready();
   $(".message").hide();
   initMessageLog();
-
   angular.bootstrap(document, ['settingsApp','messageLog']);
-  
-  Homey.ready();
+
 }

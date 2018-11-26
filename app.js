@@ -1,5 +1,13 @@
 "use strict";
+
+const Homey = require('homey');
+
+class MySensorsApp extends Homey.App {
   
-module.exports.init = function(){
-	
+  onInit() {
+    this.log('App Starting...');
+  }
+  
 }
+
+module.exports = MySensorsApp; 

@@ -1,4 +1,5 @@
 'use strict';
+const Homey = require('homey');
 const util = require('util')
 const events = require('events');
 var mysensorsProtocol = require('./mysensorsProtocol');
@@ -75,10 +76,14 @@ class MySensors extends events.EventEmitter {
 	    var devices = [];
 
 	    for(var nodeId in this.nodes){
+			console.log(nodeId);
 	        var node = this.getNodeById(nodeId);
 	        if(node !== undefined) {
+				console.log('.');
 	            if(!node.getIsAdded()) {
+					console.log('-');
 					if(node.getNumSensors() > 0) {
+						console.log('*');
 						devices.push(node);
 					}
 	            }
@@ -86,8 +91,9 @@ class MySensors extends events.EventEmitter {
 	    }
 	    var extra = {};
 	    extra.mysensors_types = mysensorsProtocol.req_set;
-	    extra.homey_capabilities = this.getDeviceClassesCapabilities();
-	    callback( devices , extra);
+		extra.homey_capabilities = this.getDeviceClassesCapabilities();
+
+		callback( devices , extra);
 	}
 
 	addedNodePair(data, callback) {
@@ -197,7 +203,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	connectToGateway() {
-		this.settings = Homey.manager('settings').get('mys_settings');
+		this.settings = Homey.ManagerSettings.get('mys_settings');
 
 	    if(this.settings && (this.gwIsConnected === false)) {
 	        if((this.settings.gatewayType == 'mqtt') && 
@@ -429,7 +435,9 @@ class MySensors extends events.EventEmitter {
 
 	actionSet(args, callback) {
 
-	    var node = this.getNodeById(args.device.nodeId);
+		var data = args.device.getData();
+		var node = this.getNodeById(data.nodeId);
+
 	    if(node !== null) {
 		    var sensor = node.getSensorById(args.sensorId.sensorId);
 		    if(sensor !== null) {
@@ -655,7 +663,7 @@ class MySensors extends events.EventEmitter {
 	}
 
 	mySensorMessageLog(message) {
-		this.messageLog = Homey.manager('settings').get('mySensorMessageLog');
+		this.messageLog = Homey.ManagerSettings.get('mySensorMessageLog');
 
 		if (!this.messageLog) {
 			this.messageLog = [];
@@ -677,7 +685,7 @@ class MySensors extends events.EventEmitter {
 
         this.messageLog.push(newRow);
 
-		var messageLogCount = parseInt(Homey.manager('settings').get('myMessageLogCount'));
+		var messageLogCount = parseInt(Homey.ManagerSettings.get('myMessageLogCount'));
 		if(!messageLogCount) {
 			messageLogCount = 5000;
 		}
@@ -688,8 +696,10 @@ class MySensors extends events.EventEmitter {
 			sendRealTimeEvent = 'reloadMySensorMessage';
 		}
 		
-		Homey.manager('settings').set('mySensorMessageLog', this.messageLog);
-		Homey.manager('api').realtime(sendRealTimeEvent, newRow);
+		Homey.ManagerSettings.set('mySensorMessageLog', this.messageLog);
+		//Homey.manager('api').realtime(sendRealTimeEvent, newRow);
+		Homey.ManagerApi.realtime(sendRealTimeEvent, newRow)
+    			.catch( this.error )
 	}
 
 	debugLog(message, data) {

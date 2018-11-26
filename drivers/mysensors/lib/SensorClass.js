@@ -1,5 +1,6 @@
 'use strict';
 const events = require('events');
+const Homey = require('homey');
 var deviceClasses = require('./deviceclasses.json');
 var mysensorsProtocol = require('./mysensorsProtocol');
 
@@ -129,12 +130,15 @@ class Sensor extends events.EventEmitter {
     }
 
     setPayloadFromMessage(value) {
+        console.log('payload');
         var old_payload = this.payload;
         this.setPayload(value);
         var payload_parse = this.parsePayload();
         if(old_payload != this.payload) {
             this.emit('sensorTriggerValue', 'value_changed', this, payload_parse);
-        }
+        } 
+        // always send when there is a new value
+        this.emit('sensorTriggerValue', 'value_updated', this, payload_parse); 
         
         switch(payload_parse) {
             case true:
