@@ -1,7 +1,7 @@
 {
     "id": "org.mysensors.homey",
     "sdk": 2,
-    "version": "0.2.3",
+    "version": "0.3.0",
     "compatibility": ">=1.5.0",
     "name": {
         "en": "Mysensors.org"
