@@ -130,7 +130,6 @@ class Sensor extends events.EventEmitter {
     }
 
     setPayloadFromMessage(value) {
-        console.log('payload');
         var old_payload = this.payload;
         this.setPayload(value);
         var payload_parse = this.parsePayload();
