@@ -2,18 +2,24 @@
 <html>
 <head>
 	<meta charset="utf-8">
-    <script src="js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/mysensors_pair.css">
-    <script type="text/javascript" src="js/mysensors_pair.js"></script> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="css/mysensors_pair.css">
+	<script type="text/javascript" src="js/mysensors_pair.js"></script> 
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 <div id="node_list" class="list-group"></div>
 
-<div id="mysensor-form" class="modal fade" role="dialog" data-backdrop="static">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-body">
+<div id="mysensor-form" class="form-horizontal">
+	<div class="dialog">
+		<div class="content">
+			<div class="body">
 				<div id="error_msg" class="alert alert-danger"></div>
 				<form>
 			    	<div class="form-group">
@@ -38,17 +44,17 @@
 					<div id="sensorsList" class="list-group" ></div>
 			  </form>
 			</div>
-			<div class="modal-footer">
+			<div class="footer">
 				<button type="button" class="btn btn-default btn-sm" data-i18n="pair.nodeForm.cancel" onclick="closeModal()"></button>
 				<button type="button" class="btn btn-primary btn-sm" data-i18n="pair.nodeForm.add" onclick="addNode()"></button>
 			</div>
 		</div>
 	</div>
 </div>
-<div id="sensor-form" class="modal fade" role="dialog" data-backdrop="static">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-body">
+<div id="sensor-form" class="form-horizontal" >
+	<div class="dialog">
+		<div class="content">
+			<div class="body">
 				<div id="sensor_error_msg" class="alert alert-danger"></div>
 				<form id="sensorForm">
 					<div class="form-group">
@@ -72,7 +78,7 @@
 					</div>
 			  </form>
 			</div>
-			<div class="modal-footer">
+			<div class="footer">
 				<button type="button" class="btn btn-danger btn-sm" onclick="removeSensor()" data-i18n="pair.sensorForm.delete"></button>
 				<button type="button" class="btn btn-default btn-sm" onclick="closeSensor()" data-i18n="pair.sensorForm.cancel"></button>
 				<button id="saveSensorBtn" type="button" class="btn btn-primary btn-sm" onclick="saveSensor()" data-i18n="pair.sensorForm.save"></button>

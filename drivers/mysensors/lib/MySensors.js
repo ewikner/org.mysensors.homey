@@ -92,8 +92,11 @@ class MySensors extends events.EventEmitter {
 	    var extra = {};
 	    extra.mysensors_types = mysensorsProtocol.req_set;
 		extra.homey_capabilities = this.getDeviceClassesCapabilities();
-
-		callback( devices , extra);
+		var data = {}
+		data.deviceArr = devices;
+		data.extraArr = extra;
+		callback(null, data);
+		//callback( devices , extra);
 	}
 
 	addedNodePair(data, callback) {
@@ -335,6 +338,9 @@ class MySensors extends events.EventEmitter {
 	    })
 
 	    node.on('nodeSensorRealtimeUpdate', (nodeDeviceData, capability, payload) => {
+			console.log('##Node Update');
+			console.log(capability+":" + payload);
+
 	        this.emit('nodeSensorRealtimeUpdate', nodeDeviceData, capability, payload);
 	    })
 	}

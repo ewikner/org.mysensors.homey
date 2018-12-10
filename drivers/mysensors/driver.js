@@ -64,14 +64,17 @@ class MySensorDriver extends Homey.Driver {
 		console.log('pairing');
 
 	    socket.on('initPair', ( data, callback ) => {
+			console.log("initPair");
 	        mySensor.initPair( data, callback );
 	    });
 
 	    socket.on('addedNodePair', (data, callback) => {
+			console.log("addedNodePair");
 	        mySensor.addedNodePair(data, callback);
 	    });
 
 	    socket.on('addedDevicePair', (device, callback) => {
+			console.log("addedDevicePair");
 	        mySensor.addedDevicePair(device, callback);
 	    });
     }
@@ -166,10 +169,22 @@ class MySensorDriver extends Homey.Driver {
 		
 	    mySensor.on('nodeSensorRealtimeUpdate', (nodeDeviceData, capability, payload) => {
 			var dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
+			console.log('***update value')
+
+
+			this.devices.forEach((device) => {
+				var data = device.getData();
+				console.log(device.getName());
+				console.log(data.nodeId);
+			}) 
+
+			dev = this.devices[0];
 
 			if ( typeof dev !== 'undefined' && dev )
 			{
-				dev.setCapabilityValue(capability,payload);
+				dev.updateNode(capability,payload);
+				//console.log(dev);
+				//dev.setCapabilityValue(capability,payload);
 			}
 
 	    	// module.exports.realtime(dev, capability, payload, (err, success) => {

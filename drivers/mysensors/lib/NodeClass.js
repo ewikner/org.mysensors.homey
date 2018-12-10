@@ -515,6 +515,8 @@ class Node extends events.EventEmitter {
 			mobile: sensor_device_object.mobile
 		};
 
+		console.log(node_device);
+
 		return node_device;
 	}
 }
