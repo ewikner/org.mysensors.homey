@@ -54,7 +54,7 @@ class Node extends events.EventEmitter {
 	setBatteryLevel(value) {
 		this.batteryLevel = this.parseBatteryLevel(value);
 		if (this.showBatteryLevel) {
-			this.triggerNodeSensorRealtimeUpdate("measure_battery", this.batteryLevel);
+			this.triggerNodeSensorRealtimeUpdate("measure_battery.255", this.batteryLevel);
 		}
 	}
 
@@ -287,7 +287,7 @@ class Node extends events.EventEmitter {
 		}
 
 		if (this.showBatteryLevel) {
-			sensorCapabilities.push("measure_battery");
+			sensorCapabilities.push("measure_battery.255");
 		}
 		if (this.showLastSeen) {
 			sensorCapabilities.push("mysensors_lastseen.255");

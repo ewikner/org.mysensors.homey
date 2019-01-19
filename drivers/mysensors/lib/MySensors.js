@@ -152,6 +152,8 @@ class MySensors extends events.EventEmitter {
 	            	var value = null;
 	            	if((node.getShowBatteryLevel()) && (capability == 'measure_battery')) {
 		                value = node.getBatteryLevel();
+					} else if((node.getShowBatteryLevel()) && (capability == 'measure_battery.255')) {
+					    value = node.getBatteryLevel();
 	            	} else if((node.getShowLastSeen()) && (capability == 'mysensors_lastseen.255')) {
 		                value = node.getLastSeen();
 	            	} else {
@@ -174,6 +176,8 @@ class MySensors extends events.EventEmitter {
 	            if( typeof callback == 'function' ) {
 	                var node = this.getNodeById(device_data.nodeId);
 	                if((node.getShowBatteryLevel()) && (capability == 'measure_battery')) {
+						node.setShowBatteryLevel(value);
+					} else if((node.getShowBatteryLevel()) && (capability == 'measure_battery.255')) {
 	                    node.setShowBatteryLevel(value);
 	                } else if((node.getShowLastSeen()) && (capability == 'mysensors_lastseen.255')) {
 		                node.setLastSeen(value);

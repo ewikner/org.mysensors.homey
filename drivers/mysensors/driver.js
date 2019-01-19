@@ -176,7 +176,7 @@ class MySensorDriver extends Homey.Driver {
 				try {
 					const response = await dev.setCapabilityValue(capability, payload);
 				} catch (error) {
-	                debugLog('! Realtime ERR 1: ',err);
+	                debugLog('! Realtime ERR 1: ',error);
 	                debugLog('! Realtime ERR 2: ',capability); 
 	                debugLog('! Realtime ERR 3: ',nodeDeviceData);
 				} finally {
