@@ -1,0 +1,69 @@
+{
+	"settings": {
+		"h1": "MySensors",
+		"h4": "Instellingen voor MySensors Gateway",
+		"p": "Vul data in om te verbinden met je Gateway",
+		"script": {
+			"success": "Succesvol bewaard"
+		},
+		"messagebar": {
+			"legend": "Bericht"
+		},
+		"clearLogBtn": "Clear message log",
+		"clearLog": "You have now cleared the log",
+		"mys_show_debug": "Show debug log to console",
+		"change_mys_show_debug": "Change debug setting",
+		"myMessageLogCount": "Number of messages in log",
+		"change_myMessageLogCount": "Change maximum number messages in log",
+		"form": {
+			"legend": "Settings",
+			"gatewayType": "Connection type",
+			"gatewayType_none": "None",
+			"gatewayType_mqtt": "MQTT",
+			"gatewayType_ethernet": "Ethernet",
+			"mqtt_host": "Host",
+			"mqtt_port": "Port",
+			"ethernet_host": "Host",
+			"ethernet_port": "Port",
+			"subscribe_topic": "Subscribe topic",
+			"publish_topic": "Publish topic",
+			"timeout": "Timeout",
+			"submit": "Save settings"
+		}
+	},
+	"pair": {
+		"title": "Add your sensor",
+		"select_capability": "Select capability",
+		"showSensorList": "Show Sensor list",
+		"hideSensorList": "Hide Sensor list",
+		"noSensors": "No sensors",
+		"noNodes": "You may close this window.",
+		"selectSensorType": "Select Sensor type",
+		
+		"nodeForm": {
+			"name": "Node name",
+			"lastseen": "Show Last Seen",
+			"battery": "Show Battery Level",
+			"ack": "Send Ack",
+			"newSensor": "New Sensor",
+			"cancel": "Cancel",
+			"add": "Add"
+		},
+		"sensorForm" : {
+			"sensor_id": "Sensor ID",
+			"title": "Title",
+			"type": "Sensor Type",
+			"capability": "Sensor Capability",
+			"delete": "Delete",
+			"cancel": "Cancel",
+			"save": "Save"
+
+		},
+		"errors": {
+			"sensor_exists": "Sensor ID already exists, Try again!",
+			"sensor_between": "Sensor ID min 0 and max 254, Try again!",
+			"sensor_capability": "You need to select a capability",
+			"sensor_no_capability": "have not a capability"
+		}
+	}
+}

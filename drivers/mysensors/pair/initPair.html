@@ -1,40 +1,35 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
 	<meta charset="utf-8">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<!-- Optional theme -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-	<!-- Latest compiled and minified JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-	<link rel="stylesheet" href="css/mysensors_pair.css">
-	<script type="text/javascript" src="js/mysensors_pair.js"></script> 
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="css/mysensors_pair.css">
+	<script type="text/javascript" src="js/mysensors_pair.js"></script>
 </head>
 <body>
-<div id="node_list" class="list-group"></div>
+   <div class="container-fluid">
+		<div id="node_list" class="list-group">wat is dit nu van zooi</div>
 
-<div id="mysensor-form" class="form-horizontal">
-	<div class="dialog">
-		<div class="content">
-			<div class="body">
+		<div id="mysensor-form">
+			<div>
 				<div id="error_msg" class="alert alert-danger"></div>
 				<form>
-			    	<div class="form-group">
-			    		<div id="nodeAlert" class="alert alert-danger"></div>
+					<div class="form-group">
+						<div id="nodeAlert" class="alert alert-danger"></div>
 						<label for="node_name" data-i18n="pair.nodeForm.name"></label>
 						<input type="text" id="node_name" value="" class="form-control">
 						<div class="checkbox">
-					    	<label><input name="node_show_lastseen" id="node_show_lastseen" type="checkbox" value="" ><div data-i18n="pair.nodeForm.lastseen"></div></label>
-					    </div>
+							<label><input name="node_show_lastseen" id="node_show_lastseen" type="checkbox" value="" ><div data-i18n="pair.nodeForm.lastseen"></div></label>
+						</div>
 						<div class="checkbox">
-					    	<label><input name="node_show_battery" id="node_show_battery" type="checkbox" value="" ><div data-i18n="pair.nodeForm.battery"></div></label>
-					    </div>
-					    <div class="checkbox">
-					    	<label><input name="node_send_ack" id="node_send_ack" type="checkbox" value="" ><div data-i18n="pair.nodeForm.ack"></div></label>
-					    </div>
+							<label><input name="node_show_battery" id="node_show_battery" type="checkbox" value="" ><div data-i18n="pair.nodeForm.battery"></div></label>
+						</div>
+						<div class="checkbox">
+							<label><input name="node_send_ack" id="node_send_ack" type="checkbox" value="" ><div data-i18n="pair.nodeForm.ack"></div></label>
+						</div>
 					</div>
 					<div >
 						<button id="btnShowList" data-i18n="pair.showSensorList" type="button" class="btn btn-primary btn-xs" onclick="showHideSensors()"></button>
@@ -42,49 +37,45 @@
 					</div>
 					<br>
 					<div id="sensorsList" class="list-group" ></div>
-			  </form>
+				</form>
 			</div>
-			<div class="footer">
+			<div class="modal-footer">
 				<button type="button" class="btn btn-default btn-sm" data-i18n="pair.nodeForm.cancel" onclick="closeModal()"></button>
 				<button type="button" class="btn btn-primary btn-sm" data-i18n="pair.nodeForm.add" onclick="addNode()"></button>
 			</div>
 		</div>
-	</div>
-</div>
-<div id="sensor-form" class="form-horizontal" >
-	<div class="dialog">
-		<div class="content">
-			<div class="body">
-				<div id="sensor_error_msg" class="alert alert-danger"></div>
-				<form id="sensorForm">
-					<div class="form-group">
-						<div>
-							<div id="sensorIDAlert" class="alert alert-danger"></div>
-							<label class="control-label" for="sensorId" data-i18n="pair.sensorForm.sensor_id"></label>
-							<input type="number" max="254" min="0" step="1" id="sensorId" value="" class="form-control" >
+		<div id="sensor-form">
+			<div>
+					<div id="sensor_error_msg" class="alert alert-danger"></div>
+					<form id="sensorForm">
+						<div class="form-group">
+							<div>
+								<div id="sensorIDAlert" class="alert alert-danger"></div>
+								<label class="control-label" for="sensorId" data-i18n="pair.sensorForm.sensor_id"></label>
+								<input type="number" max="254" min="0" step="1" id="sensorId" value="" class="form-control" >
+							</div>
+							<div>
+								<label for="sensor_title" data-i18n="pair.sensorForm.title"></label>
+								<input type="text" id="sensor_title" value="" class="form-control">
+							</div>
+							<div>
+								<label for="sensor_types" data-i18n="pair.sensorForm.type"></label>
+								<select id="sensor_types" class="form-control"></select>
+							</div>
+							<div>
+								<label for="sensor_capability" data-i18n="pair.sensorForm.capability"></label>
+								<select id="sensor_capability" class="form-control"></select>
+							</div>
 						</div>
-						<div>
-							<label for="sensor_title" data-i18n="pair.sensorForm.title"></label>
-							<input type="text" id="sensor_title" value="" class="form-control">
-						</div>
-						<div>
-							<label for="sensor_types" data-i18n="pair.sensorForm.type"></label>
-							<select id="sensor_types" class="form-control"></select>
-						</div>
-						<div>
-							<label for="sensor_capability" data-i18n="pair.sensorForm.capability"></label>
-							<select id="sensor_capability" class="form-control"></select>
-						</div>
-					</div>
-			  </form>
-			</div>
-			<div class="footer">
-				<button type="button" class="btn btn-danger btn-sm" onclick="removeSensor()" data-i18n="pair.sensorForm.delete"></button>
-				<button type="button" class="btn btn-default btn-sm" onclick="closeSensor()" data-i18n="pair.sensorForm.cancel"></button>
-				<button id="saveSensorBtn" type="button" class="btn btn-primary btn-sm" onclick="saveSensor()" data-i18n="pair.sensorForm.save"></button>
+				</form>
+				<div class="footer">
+					<button type="button" class="btn btn-danger btn-sm" onclick="removeSensor()" data-i18n="pair.sensorForm.delete"></button>
+					<button type="button" class="btn btn-default btn-sm" onclick="closeSensor()" data-i18n="pair.sensorForm.cancel"></button>
+					<button id="saveSensorBtn" type="button" class="btn btn-primary btn-sm" onclick="saveSensor()" data-i18n="pair.sensorForm.save"></button>
+				</div>
 			</div>
 		</div>
-	</div>
-</div>
+   </div>
+
 </body>
 </html>

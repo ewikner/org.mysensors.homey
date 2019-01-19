@@ -167,25 +167,21 @@ class MySensorDriver extends Homey.Driver {
 
 
 		
-	    mySensor.on('nodeSensorRealtimeUpdate', (nodeDeviceData, capability, payload) => {
-			var dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
-			console.log('***update value')
+	   mySensor.on('nodeSensorRealtimeUpdate', async (nodeDeviceData, capability, payload) => {
+			debugLog('! nodeSensorRealtimeUpdate');
 
+			const dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
 
-			this.devices.forEach((device) => {
-				var data = device.getData();
-				console.log(device.getName());
-				console.log(data.nodeId);
-			}) 
-
-			dev = this.devices[0];
-
-			if ( typeof dev !== 'undefined' && dev )
-			{
-				dev.updateNode(capability,payload);
-				//console.log(dev);
-				//dev.setCapabilityValue(capability,payload);
+			if (dev) {
+				try {
+					const response = await dev.setCapabilityValue(capability, payload);
+				} catch (error) {
+					console.log('error', error);
+				} finally {
+					//console.log('finally');
+				}
 			}
+			
 
 	    	// module.exports.realtime(dev, capability, payload, (err, success) => {
 	        //     if (err) {
@@ -201,7 +197,6 @@ class MySensorDriver extends Homey.Driver {
 			try {
 				var dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
 				var tokens = {}
-
 				switch(eventName) {
 					case 'value_updated':
 						this.trigger.value_updated.trigger( dev, tokens, { 'sensorId': sensor.sensorId  } )
@@ -215,7 +210,7 @@ class MySensorDriver extends Homey.Driver {
 					case 'value_off':
 						this.trigger.value_off.trigger( dev, tokens, { 'sensorId': sensor.sensorId  } )
 						break;
-				}				
+				}	
 			} catch (error) {
 				debugLog('Cannot set Trigger value', sensor.sensorId);
 			}
@@ -365,6 +360,24 @@ class MySensorDriver extends Homey.Driver {
 		node.setName(device.getName());
 		node.addNodeToDevice();
 	}
+
+	removeDevice(device) {
+		debugLog("remove device / delete node");
+		var data = device.getData();
+		mySensor.deletedDevice(data);
+
+		this.devices = this.getDevices();
+
+	    this.devices.forEach((device) => {
+			this.getDeviceInfo(device);
+		}) 
+	}
+
+	// for testing
+	format(obj) {
+		console.log(JSON.stringify(obj, null, " "));
+	  }
+
 
 }
 

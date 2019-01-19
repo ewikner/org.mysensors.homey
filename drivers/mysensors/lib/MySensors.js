@@ -153,7 +153,7 @@ class MySensors extends events.EventEmitter {
 	            var node = this.getNodeById(device_data.nodeId);
 	            if( typeof callback == 'function' ) {
 	            	var value = null;
-	            	if((node.getShowBatteryLevel()) && (capability == 'measure_battery.255')) {
+	            	if((node.getShowBatteryLevel()) && (capability == 'measure_battery')) {
 		                value = node.getBatteryLevel();
 	            	} else if((node.getShowLastSeen()) && (capability == 'mysensors_lastseen.255')) {
 		                value = node.getLastSeen();
@@ -176,7 +176,7 @@ class MySensors extends events.EventEmitter {
 	        set: ( device_data, value, callback ) => {
 	            if( typeof callback == 'function' ) {
 	                var node = this.getNodeById(device_data.nodeId);
-	                if((node.getShowBatteryLevel()) && (capability == 'measure_battery.255')) {
+	                if((node.getShowBatteryLevel()) && (capability == 'measure_battery')) {
 	                    node.setShowBatteryLevel(value);
 	                } else if((node.getShowLastSeen()) && (capability == 'mysensors_lastseen.255')) {
 		                node.setLastSeen(value);
@@ -309,7 +309,7 @@ class MySensors extends events.EventEmitter {
 	    }
 	    this.discoverTimer = setInterval(() => {
 	    	this.sendDiscoverMessage();
-	    }, 3600000 );
+	    }, 3600000 ); // one hour reschedule discovery
 	}
 
 	sendDiscoverMessage() {
@@ -319,7 +319,7 @@ class MySensors extends events.EventEmitter {
 	        sensorId: this.NODE_SENSOR_ID,
 	        messageType: 'internal',
 	        ack: 0,
-	        subType: 'I_DISCOVER',
+	        subType: 'I_DISCOVER_REQUEST',
 	        payload: '0'
 	    });
 	}
@@ -410,7 +410,7 @@ class MySensors extends events.EventEmitter {
 
 	    if(this.gwClient != null) {
 	        if(this.settings.gatewayType == 'mqtt') {
-	            this.debugLog("SENDDATA to MQTT "+this.settings.publish_topic+'/'+dataStr.message_str);
+	            this.debugLog("SENDDATA to MQTT "+this.settings.publish_topic+'/'+dataStr.message_str + '  payload:' + dataStr.payload);
 	            this.gwClient.publish(this.settings.publish_topic+'/'+dataStr.message_str, dataStr.payload);
 	        } else if(this.settings.gatewayType == 'ethernet') {
 	            this.debugLog("SENDDATA to ethernet "+dataStr);
@@ -634,7 +634,7 @@ class MySensors extends events.EventEmitter {
 	                payload: 'PING'
 	            });
 	        case 'I_PRESENTATION': break;
-	        case 'I_DISCOVER': break;
+	        case 'I_DISCOVER_REQUEST': break;
 	        case 'I_DISCOVER_RESPONSE': break;
 	        	/*
 	        	node = getNode(mcMessage);
@@ -656,7 +656,17 @@ class MySensors extends events.EventEmitter {
 	            //     payload: 'M'
 	            // });
 	        	break;
-	        case 'I_REGISTRATION_RESPONSE': break;
+			case 'I_REGISTRATION_RESPONSE': break;
+			case 'I_SIGNAL_REPORT_REQUEST': break;
+			case 'I_SIGNAL_REPORT_REVERSE': break;
+			case 'I_SIGNAL_REPORT_RESPONSE': break;
+			case 'I_PRE_SLEEP_NOTIFICATION': 
+				this.debugLog('Going to sleep');
+				this.debugLog(message.nodeId);
+				this.debugLog(message.payload)
+			
+				break;
+			case 'I_POST_SLEEP_NOTIFICATION': break;
 	        case 'I_DEBUG': 
 	        	// TODO
 	            break;

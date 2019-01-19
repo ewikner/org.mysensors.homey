@@ -1,8 +1,8 @@
 {
     "id": "org.mysensors.homey",
     "sdk": 2,
-    "version": "0.3.0",
-    "compatibility": ">=1.5.0",
+    "version": "0.3.2",
+    "compatibility": ">=2.0.0",
     "name": {
         "en": "Mysensors.org"
     },
@@ -41,7 +41,9 @@
                 "en": "Last Seen"
             },
             "getable": true,
-            "setable": true
+            "setable": true,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_lastseen.svg"
         },
         "mysensors_custom": {
             "type": "string",
@@ -49,7 +51,9 @@
                 "en": "Mysensor custom"
             },
             "getable": true,
-            "setable": true
+            "setable": true,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_custom.svg"
         },
         "mysensors_number": {
             "type": "number",
@@ -58,7 +62,9 @@
             },
             "decimals": 2,
             "getable": true,
-            "setable": true
+            "setable": true,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_number.svg"
         },
         "mysensors_boolean": {
             "type": "boolean",
@@ -66,7 +72,9 @@
                 "en": "Mysensor boolean"
             },
             "getable": true,
-            "setable": true
+            "setable": true,
+            "uiComponent": "toggle",
+            "icon": "/assets/icons/mysensors_boolean.svg"
         },
         "mysensors_boolean_get": {
             "type": "boolean",
@@ -74,18 +82,23 @@
                 "en": "Mysensor boolean get"
             },
             "getable": true,
-            "setable": false
+            "setable": false,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_boolean_get.svg"
         },
         "mysensors_boolean_set": {
             "type": "boolean",
+            "uiComponent" : "button",
             "title": {
                 "en": "Mysensor boolean set"
             },
             "getable": false,
-            "setable": true
+            "setable": true,
+            "icon": "/assets/icons/mysensors_boolean_set.svg"
         },
         "mysensors_water_flow_hour": {
             "type": "number",
+            "uiComponent": "sensor",
             "title": {
                 "en": "Water flow per hour",
                 "nl": "Watergebruik per uur"
@@ -100,10 +113,12 @@
             "chartType": "stepLine",
             "decimals": 2,
             "getable": true,
-            "setable": false
+            "setable": false,
+            "icon": "/assets/icons/mysensors_water_flow.svg"
         },
         "mysensors_water_flow_min": {
             "type": "number",
+            "uiComponent": "sensor",
             "title": {
                 "en": "Water flow per minute",
                 "nl": "Watergebruik per minuut"
@@ -118,7 +133,8 @@
             "chartType": "stepLine",
             "decimals": 2,
             "getable": true,
-            "setable": false
+            "setable": false,
+            "icon": "/assets/icons/mysensors_water_flow.svg"
         }
     },
     "drivers": [

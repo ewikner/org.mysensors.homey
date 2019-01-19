@@ -261,7 +261,12 @@ exports.internal = [
     {'id': '25', 'value': 'I_PONG'},
     {'id': '26', 'value': 'I_REGISTRATION_REQUEST'},
     {'id': '27', 'value': 'I_REGISTRATION_RESPONSE'},
-    {'id': '28', 'value': 'I_DEBUG'}
+    {'id': '28', 'value': 'I_DEBUG'},
+    {'id': '29', 'value': 'I_SIGNAL_REPORT_REQUEST'},
+    {'id': '30', 'value': 'I_SIGNAL_REPORT_REVERSE'},
+    {'id': '31', 'value': 'I_SIGNAL_REPORT_RESPONSE'},
+    {'id': '32', 'value': 'I_PRE_SLEEP_NOTIFICATION'},
+    {'id': '33', 'value': 'I_POST_SLEEP_NOTIFICATION'}
 ];
 
 exports.stream = [
