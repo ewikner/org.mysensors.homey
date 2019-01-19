@@ -217,7 +217,7 @@ class Node extends events.EventEmitter {
 		sensor.on('sensorTriggerValue', (eventName, sensor, value) => {
 			if(this.isAdded) {
 				var node_device_data = this.getDeviceDataObject();
-				console.log('do trigger');
+				//console.log('do trigger');
 				this.emit('nodeSensorTriggerValue', eventName, sensor, node_device_data, value);
 			}
 		})
@@ -238,7 +238,7 @@ class Node extends events.EventEmitter {
 	}
 
 	triggerNodeSensorRealtimeUpdate(capability, payload) {
-		console.log('trigger update');
+		//console.log('trigger update');
 		var node_device_data = this.getDeviceDataObject();
 		this.emit('nodeSensorRealtimeUpdate', node_device_data, capability, payload);
 	}

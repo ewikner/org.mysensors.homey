@@ -100,10 +100,7 @@ function init() {
 	Homey.emit('initPair', false, function(err, data) {
 		var deviceArr = data.deviceArr;
 		var extraArr = data.extraArr;
-		console.log('device array');
-		console.log(deviceArr);
-		console.log('extra array');
-		console.log(extraArr);
+
 	 	$("#node_list").empty();
 		if(deviceArr !== undefined) {
 			if(deviceArr.length == 0) {

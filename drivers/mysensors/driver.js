@@ -168,7 +168,7 @@ class MySensorDriver extends Homey.Driver {
 
 		
 	   mySensor.on('nodeSensorRealtimeUpdate', async (nodeDeviceData, capability, payload) => {
-			debugLog('! nodeSensorRealtimeUpdate');
+			debugLog(`! NodeSensor Realtimeupdate of ${capability} payload:${payload}`);
 
 			const dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
 
@@ -176,7 +176,9 @@ class MySensorDriver extends Homey.Driver {
 				try {
 					const response = await dev.setCapabilityValue(capability, payload);
 				} catch (error) {
-					console.log('error', error);
+	                debugLog('! Realtime ERR 1: ',err);
+	                debugLog('! Realtime ERR 2: ',capability); 
+	                debugLog('! Realtime ERR 3: ',nodeDeviceData);
 				} finally {
 					//console.log('finally');
 				}
@@ -265,7 +267,7 @@ class MySensorDriver extends Homey.Driver {
 
 	onTriggerAutocomplete(query, args) {
 
-		console.log(args);
+	//	console.log(args);
 
 		var data = args.device.getData();
     	var resultArray = [];

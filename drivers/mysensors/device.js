@@ -14,9 +14,8 @@ class MySensorDevice extends Homey.Device {
         this._driver = await this._getDriver();
         this._driver.devices.push(this);
 
-        this.log('device init');
         var name = this.getName();
-        this.log('name:', name);
+        this.log(`Init device ${name}`);
     }
 
     // this method is called when the Device is added

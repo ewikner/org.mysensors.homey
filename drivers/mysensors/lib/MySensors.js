@@ -76,14 +76,11 @@ class MySensors extends events.EventEmitter {
 	    var devices = [];
 
 	    for(var nodeId in this.nodes){
-			console.log(nodeId);
+			//console.log(nodeId);
 	        var node = this.getNodeById(nodeId);
 	        if(node !== undefined) {
-				console.log('.');
 	            if(!node.getIsAdded()) {
-					console.log('-');
 					if(node.getNumSensors() > 0) {
-						console.log('*');
 						devices.push(node);
 					}
 	            }
@@ -332,15 +329,13 @@ class MySensors extends events.EventEmitter {
 	    })
 
 	    node.on('nodeSensorTriggerValue', (eventName, sensor, nodeDeviceData, value) => {
-	        this.debugLog('MySensors.js nodeSensorTriggerValue ', eventName)
-	        this.debugLog(value);
+	        // this.debugLog('MySensors.js nodeSensorTriggerValue ', eventName)
+	        // this.debugLog(value);
 	        this.emit('nodeSensorTriggerValue', eventName, sensor, nodeDeviceData, value);
 	    })
 
 	    node.on('nodeSensorRealtimeUpdate', (nodeDeviceData, capability, payload) => {
-			console.log('##Node Update');
-			console.log(capability+":" + payload);
-
+			console.log(`## Node Update with capability : ${capability} payload : ${payload}`);
 	        this.emit('nodeSensorRealtimeUpdate', nodeDeviceData, capability, payload);
 	    })
 	}
@@ -406,7 +401,7 @@ class MySensors extends events.EventEmitter {
 	    var dataStr = returnObj.returnMessage;
 	    this.mySensorMessageLog(returnObj.messageObj);
 
-	    this.debugLog(dataStr);
+	   // this.debugLog(dataStr);
 
 	    if(this.gwClient != null) {
 	        if(this.settings.gatewayType == 'mqtt') {
