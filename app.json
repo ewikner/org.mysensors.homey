@@ -1,7 +1,7 @@
 {
     "id": "org.mysensors.homey",
     "sdk": 2,
-    "version": "0.3.3",
+    "version": "0.3.4",
     "compatibility": ">=2.0.0",
     "name": {
         "en": "Mysensors.org"
@@ -52,6 +52,7 @@
             },
             "getable": true,
             "setable": true,
+            "insights": true,
             "uiComponent": "sensor",
             "icon": "/assets/icons/mysensors_custom.svg"
         },
@@ -63,6 +64,7 @@
             "decimals": 2,
             "getable": true,
             "setable": true,
+            "insights": true,
             "uiComponent": "sensor",
             "icon": "/assets/icons/mysensors_number.svg"
         },
@@ -73,6 +75,7 @@
             },
             "getable": true,
             "setable": true,
+            "insights": true,
             "uiComponent": "toggle",
             "icon": "/assets/icons/mysensors_boolean.svg"
         },
@@ -83,6 +86,7 @@
             },
             "getable": true,
             "setable": false,
+            "insights": true,
             "uiComponent": "sensor",
             "icon": "/assets/icons/mysensors_boolean_get.svg"
         },
@@ -94,6 +98,7 @@
             },
             "getable": false,
             "setable": true,
+            "insights": true,
             "icon": "/assets/icons/mysensors_boolean_set.svg"
         },
         "mysensors_water_flow_hour": {
@@ -114,6 +119,7 @@
             "decimals": 2,
             "getable": true,
             "setable": false,
+            "insights": true,
             "icon": "/assets/icons/mysensors_water_flow.svg"
         },
         "mysensors_water_flow_min": {
@@ -134,6 +140,7 @@
             "decimals": 2,
             "getable": true,
             "setable": false,
+            "insights": true,
             "icon": "/assets/icons/mysensors_water_flow.svg"
         }
     },
