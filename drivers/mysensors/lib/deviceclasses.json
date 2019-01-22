@@ -215,6 +215,7 @@
 			},
 			"getable": true,
 			"setable": true,
+            "insights": true,
 			"options": {
 				"setOnDim": {
 					"type": "boolean",
@@ -242,6 +243,7 @@
 			"min": 0,
 			"max": 1,
 			"decimals": 2,
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -255,6 +257,7 @@
 			"chartType": "stepLine",
 			"max": 1,
 			"decimals": 2,
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -268,6 +271,7 @@
 			"chartType": "stepLine",
 			"max": 1,
 			"decimals": 2,
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -281,6 +285,7 @@
 			"chartType": "stepLine",
 			"max": 1,
 			"decimals": 2,
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -310,6 +315,7 @@
 					}
 				}
 			],
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -398,6 +404,7 @@
 					}
 				}
 			],
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -414,6 +421,7 @@
 			},
 			"chartType": "stepLine",
 			"decimals": 2,
+            "insights": true,
 			"getable": true,
 			"setable": true
 		},
@@ -734,6 +742,7 @@
 				"en": "Generic alarm",
 				"nl": "Algemeen alarm"
 			},
+            "insights": true,
 			"decimals": 2,
 			"getable": true,
 			"setable": true
@@ -748,6 +757,7 @@
 				"en": "Detected motion",
 				"nl": "Gedetecteerde beweging"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -761,6 +771,7 @@
 				"en": "Contact sensor, e.g. for windows (true/false)",
 				"nl": "Contact sensor, bijvoorbeeld voor ramen"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -774,6 +785,7 @@
 				"en": "True when dangerous CO values have been detected",
 				"nl": "Gaat af bij gevaarlijke concentraties CO"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -787,6 +799,7 @@
 				"en": "True when dangerous CO2 values have been detected",
 				"nl": "Gaat af bij gevaarlijke concentraties CO2"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -800,6 +813,7 @@
 				"en": "True when tampering has been detected",
 				"nl": "Gaat af als sabotage gedetecteerd wordt"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -813,6 +827,7 @@
 				"en": "True when smoke has been detected",
 				"nl": "Gaat af als er rook gedetecteerd wordt"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -826,6 +841,7 @@
 				"en": "True when fire has been detected",
 				"nl": "Gaat af als er brand gedetecteerd wordt"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -839,6 +855,7 @@
 				"en": "True when extreme heat has been detected",
 				"nl": "Gaat af als er extreme hitte gedetecteerd wordt"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -852,6 +869,7 @@
 				"en": "True when water has been detected",
 				"nl": "Gaat af als er water gedetecteerd wordt"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -865,6 +883,7 @@
 				"en": "True when there is a battery warning",
 				"nl": "Geeft een batterijwaarschuwing"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -878,6 +897,7 @@
 				"en": "True when it is night",
 				"nl": "Gaat af als het nacht is"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -896,6 +916,7 @@
 				"en": "Power usage in KiloWattHour (kWh)",
 				"nl": "Stroomverbuik in KiloWattUur (kWh)"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -934,6 +955,7 @@
 				"en": "Gas usage in Cubic Meter (m³)",
 				"nl": "Gas gebruik in Kubieke Meter (m³)"
 			},
+            "insights": true,
 			"getable": true,
 			"setable": false
 		},
@@ -1112,6 +1134,7 @@
 				"nl": "Knop"
 			},
 			"type": "boolean",
+            "insights": true,
 			"getable": false,
 			"setable": true
 		},
