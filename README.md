@@ -12,7 +12,9 @@ If you still want to make a donation I can build more sensors to use in the app.
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CGEGVFND9E532)
 
 ### Version history
-* 0.3.0 Adjustments to be complaint to the Homey V2 standards. Added trigger for update node  
+* 0.3.6 Several changes to make insights work [Marcel Timmermans]
+* 0.3.3 several changes to make custom icons visible [Marcel Timmermans]
+* 0.3.0 Adjustments to be complaint to the Homey V2 standards. Added trigger for update node [Marcel Timmermans] 
 * 0.2.3 Bugfix
 * 0.2.2 Fix issue with autocomplete after changes in SDK
 * 0.2.0 Magor change of the app. See more in CHANGELOG

@@ -1,7 +1,7 @@
 {
     "id": "org.mysensors.homey",
     "sdk": 2,
-    "version": "0.3.5",
+    "version": "0.3.6",
     "compatibility": ">=2.0.0",
     "name": {
         "en": "Mysensors.org"
@@ -73,6 +73,8 @@
             "title": {
                 "en": "Mysensor boolean"
             },
+            "insightsTitleTrue": { "en": "On" },
+            "insightsTitleFalse": { "en": "Off" },
             "getable": true,
             "setable": true,
             "insights": true,
@@ -87,6 +89,8 @@
             "getable": true,
             "setable": false,
             "insights": true,
+            "insightsTitleTrue": { "en": "On" },
+            "insightsTitleFalse": { "en": "Off" },
             "uiComponent": "sensor",
             "icon": "/assets/icons/mysensors_boolean_get.svg"
         },
@@ -99,6 +103,8 @@
             "getable": false,
             "setable": true,
             "insights": true,
+            "insightsTitleTrue": { "en": "On" },
+            "insightsTitleFalse": { "en": "Off" },
             "icon": "/assets/icons/mysensors_boolean_set.svg"
         },
         "mysensors_water_flow_hour": {
