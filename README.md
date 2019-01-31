@@ -1,4 +1,4 @@
-## This is depricated ##
+## This is deprecated ##
 This dose not work with SDK V2
 
 ## Make Homey a controller for Mysensors.org
