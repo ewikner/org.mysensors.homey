@@ -210,12 +210,12 @@ class MySensors extends events.EventEmitter {
 
 	connectToGateway() {
 		this.settings = Homey.ManagerSettings.get('mys_settings');
-		var host = `mqtt://${this.settings.mqtt_host}:${this.settings.mqtt_port}`;
-		var options = {
-			clientId: 'mysensors_' + Math.random().toString(16).substr(2, 8),
+		const host = `mqtt://${this.settings.mqtt_host}:${this.settings.mqtt_port}`;
+		const options = {
+			clientId: `mysensors_${Math.random().toString(16).substr(2, 8)}`,
 			keepalive: 60,
 			reconnectPeriod: 5000,
-			encoding: 'utf8'
+			encoding: 'utf8',
 		};
 
 		// protocolId: 'MQIsdp',
@@ -234,7 +234,7 @@ class MySensors extends events.EventEmitter {
 	            this.topicPublish = this.settings.publish_topic;
 	            this.topicSubscribe = this.settings.subscribe_topic;
 	            this.debugLog(host);
-	            this.gwClient = mqtt.connect(host,options);
+	            this.gwClient = mqtt.connect(host, options);
 
 	            this.gwClient.on('connect', () => {
 	                if (this.gwClient != null) {
@@ -268,9 +268,11 @@ class MySensors extends events.EventEmitter {
 	                this.startConnectionTimer();
 	                this.gwClient = null;
 	                this.gwIsConnected = false;
-	            }).on('offline', () => {
+	            })
+					.on('offline', () => {
 	                this.debugLog('MQTT offline');
-	            }).on('error', (error) => {
+	            })
+					.on('error', (error) => {
 	                this.debugLog('MQTT error');
 	                this.debugLog(error);
 	            });
