@@ -20,6 +20,7 @@
   <ul class="nav nav-pills">
     <li class="active"><a data-toggle="pill" href="#setting">Settings</a></li>
     <li><a data-toggle="pill" href="#messageLog">messageLog</a></li>
+    <li><a data-toggle="pill" href="#AppLog">App Log</a></li>
   </ul>
 
   <div class="tab-content">
@@ -141,6 +142,11 @@
       <div ng-controller="messageLogCtrl">
         <div id="messageLogGrid" ui-grid="gridOptions" class="messageLogGrid"></div>
       </div>
+    </div>
+    <div id="AppLog" class="tab-pane fade">
+        <button type="button" id="button_deletelog" onclick="deleteLogs()" data-i18n="settings.deletelogs">Delete Logs</button>
+        <button type="button" id="button_getlog" onclick="showLogs()" data-i18n="settings.getlogs">Get Logs</button>
+        <div id="loglines"></div>
     </div>
   </div>
   </div>

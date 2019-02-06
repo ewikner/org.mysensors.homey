@@ -1,10 +1,14 @@
-var MySensors = require('./lib/MySensors.js');
 const Homey = require('homey');
+const MySensors = require('./lib/MySensors.js');
 
-var mySensor = new MySensors();
-var showDebugLog = true;
-var debugLogArr = [];
+const mySensor = new MySensors();
+let showDebugLog = true;
+let debugLogArr = [];
 
+function toLocalTime(time) {
+	const offset = new Date().getTimezoneOffset() * 60 * 1000 * -1;
+	return new Date(time.getTime() + offset);
+}
 
 function debugLog(message, data) {
 	if (!showDebugLog) {
@@ -19,42 +23,41 @@ function debugLog(message, data) {
 		data = null;
 	}
 
-	debugLogArr.push({datetime: new Date(), message: message, data: data});
+	debugLogArr.push({ datetime: new Date(), message, data });
 
 	if (debugLogArr.length > 100) {
 		debugLogArr.splice(0, 1);
 	}
 
-	var d = new Date().getTime();
-	var dString = new Date(d).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+	const dString = toLocalTime(new Date()).toISOString().replace('T', ' ').substr(0, 19);
 	if (data == null) {
-		console.log(dString+" DRIVER", message);
+		console.log(`${dString} DRIVER`, message);
 	} else {
-		console.log(dString+" DRIVER", message, data);
-	};
+		console.log(`${dString} DRIVER`, message, data);
+	}
 }
 
 class MySensorDriver extends Homey.Driver {
 
-	onInit(){
+	onInit() {
 		debugLog('init');
 
 		this.devices = [];
 
 	    showDebugLog = Homey.ManagerSettings.get('mys_show_debug');
-	    if(showDebugLog === undefined) {
+	    if (showDebugLog === undefined) {
 	    	showDebugLog = true;
 	    }
-		
+
 		mySensor.setShowDebugLog(showDebugLog);
 	    this.generateCapabilitiesGetSet();
 	    this.createHomeyListener();
-		
-		var devices = this.getDevices();
+
+		const devices = this.getDevices();
 
 	    devices.forEach((device) => {
 			this.getDeviceInfo(device);
-		}) 
+		});
 
 		mySensor.connectToGateway();
 
@@ -63,75 +66,75 @@ class MySensorDriver extends Homey.Driver {
 	onPair(socket) {
 		console.log('pairing');
 
-	    socket.on('initPair', ( data, callback ) => {
-			console.log("initPair");
-	        mySensor.initPair( data, callback );
+	    socket.on('initPair', (data, callback) => {
+			console.log('initPair');
+	        mySensor.initPair(data, callback);
 	    });
 
 	    socket.on('addedNodePair', (data, callback) => {
-			console.log("addedNodePair");
+			console.log('addedNodePair');
 	        mySensor.addedNodePair(data, callback);
 	    });
 
 	    socket.on('addedDevicePair', (device, callback) => {
-			console.log("addedDevicePair");
+			console.log('addedDevicePair');
 	        mySensor.addedDevicePair(device, callback);
 	    });
-    }
+	}
 
-	onPairListDevices( data, callback ) {
-        this.log("list devices");
+	onPairListDevices(data, callback) {
+		this.log('list devices');
 
-        var devices = [];
+		const devices = [];
 
 	//	console.log(data);
 	}
 
 	generateCapabilitiesGetSet() {
-		debugLog(" IN generateCapabilitiesGetSet")
+		debugLog(' IN generateCapabilitiesGetSet');
 	    this.capabilities = mySensor.generateCapabilitiesGetSet();
 	}
 
-	createHomeyListener(){
+	createHomeyListener() {
 
 		console.log('setup listener');
 
-		//cards 
+		// cards
 		// triggers
 
 		this.trigger = {};
-		this.trigger.value_changed = new Homey.FlowCardTriggerDevice("value_changed").register();
+		this.trigger.value_changed = new Homey.FlowCardTriggerDevice('value_changed').register();
 		this.trigger.value_changed.registerRunListener(this.triggerValue.bind(this));
 
 		this.trigger.value_changed
 			.getArgument('sensorId')
 			.registerAutocompleteListener(this.onTriggerAutocomplete.bind(this));
 
-		this.trigger.value_on = new Homey.FlowCardTriggerDevice("value_on").register();
+		this.trigger.value_on = new Homey.FlowCardTriggerDevice('value_on').register();
 		this.trigger.value_on.registerRunListener(this.triggerValue.bind(this));
 
 		this.trigger.value_on
 			.getArgument('sensorId')
 			.registerAutocompleteListener(this.onTriggerAutocomplete.bind(this));
 
-		this.trigger.value_off = new Homey.FlowCardTriggerDevice("value_off").register();
+		this.trigger.value_off = new Homey.FlowCardTriggerDevice('value_off').register();
 		this.trigger.value_off.registerRunListener(this.triggerValue.bind(this));
 
 		this.trigger.value_off
 			.getArgument('sensorId')
 			.registerAutocompleteListener(this.onTriggerAutocomplete.bind(this));
 
-		this.trigger.value_updated = new Homey.FlowCardTriggerDevice("value_updated").register();
+		this.trigger.value_updated = new Homey.FlowCardTriggerDevice('value_updated').register();
 		this.trigger.value_updated.registerRunListener(this.triggerValue.bind(this));
 
 		this.trigger.value_updated
 			.getArgument('sensorId')
 			.registerAutocompleteListener(this.onTriggerAutocomplete.bind(this));
-	
+
 
 		// conditions
 
-		this.condition = {};	
+		this.condition = {};
 		this.condition.value_is = new Homey.FlowCardCondition('value_is').register();
 		this.condition.value_is.registerRunListener(this.conditionValueIs.bind(this));
 		this.condition.value_is
@@ -144,9 +147,9 @@ class MySensorDriver extends Homey.Driver {
 			.getArgument('sensorId')
 			.registerAutocompleteListener(this.onTriggerAutocomplete.bind(this));
 
-		
+
 		// action
-		this.action = {}
+		this.action = {};
 		this.action.set_text = new Homey.FlowCardAction('set_text').register();
 		this.action.set_text.registerRunListener(this.actionSet.bind(this));
 		this.action.set_text
@@ -166,159 +169,155 @@ class MySensorDriver extends Homey.Driver {
 			.registerAutocompleteListener(this.onTriggerAutocomplete.bind(this));
 
 
-		
 	   mySensor.on('nodeSensorRealtimeUpdate', async (nodeDeviceData, capability, payload) => {
 			debugLog(`! NodeSensor Realtimeupdate of ${capability} payload:${payload}`);
 
-			const dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
+			const dev = this.devices.find(dev => dev.getData().nodeId === nodeDeviceData.nodeId);
 
 			if (dev) {
 				try {
 					const response = await dev.setCapabilityValue(capability, payload);
 				} catch (error) {
-	                debugLog('! Realtime ERR 1: ',error);
-	                debugLog('! Realtime ERR 2: ',capability); 
-	                debugLog('! Realtime ERR 3: ',nodeDeviceData);
+	                debugLog('! Realtime ERR 1: ', error);
+	                debugLog('! Realtime ERR 2: ', capability);
+	                debugLog('! Realtime ERR 3: ', nodeDeviceData);
 				} finally {
-					//console.log('finally');
+					// console.log('finally');
 				}
 			}
-			
+
 
 	    	// module.exports.realtime(dev, capability, payload, (err, success) => {
 	        //     if (err) {
 	        //         debugLog('! Realtime ERR 1: ',err);
-	        //         debugLog('! Realtime ERR 2: ',capability); 
+	        //         debugLog('! Realtime ERR 2: ',capability);
 	        //         debugLog('! Realtime ERR 3: ',nodeDeviceData);
 	        //     }
 	        // });
-	    })
+	    });
 
 	    mySensor.on('nodeSensorTriggerValue', (eventName, sensor, nodeDeviceData, value) => {
 			debugLog('! nodeSensorTriggerValue');
 			try {
-				var dev = this.devices.find(dev => dev.getData().nodeId===nodeDeviceData.nodeId);
-				var tokens = {}
-				switch(eventName) {
+				const dev = this.devices.find(dev => dev.getData().nodeId === nodeDeviceData.nodeId);
+				const tokens = {};
+				switch (eventName) {
 					case 'value_updated':
-						this.trigger.value_updated.trigger( dev, tokens, { 'sensorId': sensor.sensorId  } )
+						this.trigger.value_updated.trigger(dev, tokens, { sensorId: sensor.sensorId });
 						break;
 					case 'value_changed':
-						this.trigger.value_changed.trigger( dev, tokens, { 'sensorId': sensor.sensorId  } )
+						this.trigger.value_changed.trigger(dev, tokens, { sensorId: sensor.sensorId });
 						break;
 					case 'value_on':
-						this.trigger.value_on.trigger( dev, tokens, { 'sensorId': sensor.sensorId  } )
+						this.trigger.value_on.trigger(dev, tokens, { sensorId: sensor.sensorId });
 						break;
 					case 'value_off':
-						this.trigger.value_off.trigger( dev, tokens, { 'sensorId': sensor.sensorId  } )
+						this.trigger.value_off.trigger(dev, tokens, { sensorId: sensor.sensorId });
 						break;
-				}	
+				}
 			} catch (error) {
 				debugLog('Cannot set Trigger value', sensor.sensorId);
 			}
 	    	// Homey.manager('flow').triggerDevice(eventName, tokens, { 'sensorId': sensor.sensorId  }, nodeDeviceData);
-		})
-		
+		});
+
 		Homey.ManagerSettings.on('set', (varName) => {
-	    	if(varName == 'mys_settings') {
+	    	if (varName == 'mys_settings') {
 	    		mySensor.settingsSet();
 	    	}
-	    	if(varName == 'mys_show_debug') {
+	    	if (varName == 'mys_show_debug') {
 	    		showDebugLog = Homey.ManagerSettings.get('mys_show_debug');
 	    		mySensor.setShowDebugLog(showDebugLog);
 	    	}
-		})
-		
+		});
+
 
 	    // Homey.manager('flow').on('trigger.value_changed.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('trigger.value_changed', this.triggerValue.bind(this))
-	    
+
 	    // Homey.manager('flow').on('trigger.value_on.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('trigger.value_on', this.triggerValue.bind(this))
-	    
+
 	    // Homey.manager('flow').on('trigger.value_off.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('trigger.value_off', this.triggerValue.bind(this))
-	    
+
 	    // Homey.manager('flow').on('condition.value_is.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('condition.value_is', this.conditionValueIs.bind(this));
-	    
+
 	    // Homey.manager('flow').on('condition.onoff.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('condition.onoff', this.conditionOnOff.bind(this));
-	    
+
 	    // Homey.manager('flow').on('action.set_text.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('action.set_text', this.actionSet.bind(this))
-	    
+
 	    // Homey.manager('flow').on('action.set_number.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('action.set_number', this.actionSet.bind(this))
-	    
+
 	    // Homey.manager('flow').on('action.set_onoff.sensorId.autocomplete', this.triggerAutocomplete.bind(this))
 	    // Homey.manager('flow').on('action.set_onoff', this.actionSet.bind(this))
 	}
 
 
-	triggerValue( args, state, callback ) {
-		debugLog('FLOW = trigger')
-		if(args.sensorId.sensorId == state.sensorId) {
-        	callback( null, true );
-        } else {
-        	callback( null, false );
-        }
+	triggerValue(args, state, callback) {
+		debugLog('FLOW = trigger');
+		if (args.sensorId.sensorId == state.sensorId) {
+        	callback(null, true);
+		} else {
+        	callback(null, false);
+		}
 	}
 
 	onTriggerAutocomplete(query, args) {
 
-	//	console.log(args);
+		//	console.log(args);
 
-		var data = args.device.getData();
-    	var resultArray = [];
-    	var nodeId = data.nodeId;
-    	var node = mySensor.getNodeById(nodeId);
-    	var sensors = node.getSensors();
+		const data = args.device.getData();
+    	let resultArray = [];
+    	const nodeId = data.nodeId;
+    	const node = mySensor.getNodeById(nodeId);
+    	const sensors = node.getSensors();
 
-    	if( Object.keys( sensors ).length < 1 ) {
+    	if (Object.keys(sensors).length < 1) {
 			return Promise.reject('No Sensors');
     	}
 
     	Object.keys(sensors).forEach((sensorId) => {
-			var sensor = sensors[sensorId];
+			const sensor = sensors[sensorId];
 			resultArray.push(sensor.getAutoCompleteObj());
 		});
 
-    	resultArray = resultArray.filter(( resultArrayItem ) => {
-			return resultArrayItem.name.toLowerCase().indexOf( query.toLowerCase() ) > -1;
-		});
+    	resultArray = resultArray.filter(resultArrayItem => resultArrayItem.name.toLowerCase().indexOf(query.toLowerCase()) > -1);
 		return Promise.resolve(resultArray);
 	}
 
 	// condition functions
-	conditionValueIs(args,state)  {
-			//debugLog('FLOW = condition.value_is', args)		
-			var data = args.device.getData();
-			var node = mySensor.getNodeById(data.nodeId);
-			if(node !== null) {
-				var sensor = node.getSensorById(args.sensorId.sensorId);
-				if(sensor !== null) {
-					var pl = sensor.parsePayload();
-					if ( typeof pl !== 'undefined' && pl )
-					{
-						return Promise.resolve(args.value_is === pl.toString());
-					}
-					else {
-						return Promise.resolve(false);
-					}
-				} else {
-					return Promise.resolve(false);
+	conditionValueIs(args, state) {
+		// debugLog('FLOW = condition.value_is', args)
+		const data = args.device.getData();
+		const node = mySensor.getNodeById(data.nodeId);
+		if (node !== null) {
+			const sensor = node.getSensorById(args.sensorId.sensorId);
+			if (sensor !== null) {
+				const pl = sensor.parsePayload();
+				if (typeof pl !== 'undefined' && pl) {
+					return Promise.resolve(args.value_is === pl.toString());
 				}
-			} else {
+
 				return Promise.resolve(false);
+
 			}
+			return Promise.resolve(false);
+
+		}
+		return Promise.resolve(false);
+
 	}
 
-	
-	conditionOnOff(args,state)  {
-		//debugLog('FLOW = condition.onoff', args)
-		var testValue = args.value_is;
-		switch(testValue) {
+
+	conditionOnOff(args, state) {
+		// debugLog('FLOW = condition.onoff', args)
+		let testValue = args.value_is;
+		switch (testValue) {
 			case 'true':
 				testValue = true;
 				break;
@@ -327,61 +326,60 @@ class MySensorDriver extends Homey.Driver {
 				break;
 		}
 
-		var data = args.device.getData();
-		var node = mySensor.getNodeById(data.nodeId);
+		const data = args.device.getData();
+		const node = mySensor.getNodeById(data.nodeId);
 
-		if(node !== null) {
-			var sensor = node.getSensorById(args.sensorId.sensorId);
-			if(sensor !== null) {
+		if (node !== null) {
+			const sensor = node.getSensorById(args.sensorId.sensorId);
+			if (sensor !== null) {
 				return Promise.resolve(testValue === sensor.parsePayload());
-			} else {
-				return Promise.resolve(false);
 			}
-		} else {
 			return Promise.resolve(false);
+
 		}
+		return Promise.resolve(false);
+
 	}
 
-	actionSet( args, state, callback ) {
-		mySensor.actionSet(args, (result ) => {
-            callback( null, result );
-        })
+	actionSet(args, state, callback) {
+		mySensor.actionSet(args, (result) => {
+			callback(null, result);
+		});
 	}
 
 	getDeviceInfo(device) {
-		//console.log(device_data.getName());
+		// console.log(device_data.getName());
 
-		var data = device.getData();
-		var node = mySensor.getNodeById(data.nodeId);
+		const data = device.getData();
+		const node = mySensor.getNodeById(data.nodeId);
 
-		if(data.hasOwnProperty('sensorId')) {
-		   console.log('************* OLD DATA');		
+		if (data.hasOwnProperty('sensorId')) {
+		   console.log('************* OLD DATA');
 		}
 
-		node.setDeviceDataObject(data);		
+		node.setDeviceDataObject(data);
 		node.setName(device.getName());
 		node.addNodeToDevice();
 	}
 
 	removeDevice(device) {
-		debugLog("remove device / delete node");
-		var data = device.getData();
+		debugLog('remove device / delete node');
+		const data = device.getData();
 		mySensor.deletedDevice(data);
 
 		this.devices = this.getDevices();
 
 	    this.devices.forEach((device) => {
 			this.getDeviceInfo(device);
-		}) 
+		});
 	}
 
 	// for testing
 	format(obj) {
-		console.log(JSON.stringify(obj, null, " "));
+		console.log(JSON.stringify(obj, null, ' '));
 	  }
 
 
 }
 
 module.exports = MySensorDriver;
-
