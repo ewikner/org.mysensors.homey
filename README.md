@@ -1,6 +1,3 @@
-## This is deprecated ##
-This dose not work with SDK V2
-
 ## Make Homey a controller for Mysensors.org
 This app will make Homey a controller for Mysensors.org
 
