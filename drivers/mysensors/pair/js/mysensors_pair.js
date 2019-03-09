@@ -1,3 +1,4 @@
+
 Homey.setTitle( __("pair.title"));
 
 var selectedNode = null;
@@ -33,7 +34,7 @@ function closeModal() {
 	$( "#sensor_capability" ).val('');
 	selectedNode = null;
 	selectedSensor = null;
-	$( "#mysensor-form" ).modal("hide");
+	$( "#mysensor-form" ).hide();
 }
 
 function onClickLi(row) {
@@ -47,12 +48,12 @@ function onClickLi(row) {
 
 	listSensors(selectedNode);
 
-	$("#sensorsList").hide();
+	//$("#sensorsList").hide();
 	$("#btnShowList").text( __("pair.showSensorList") );
 	$("#nodeAlert").hide();
 	$("#nodeAlert").text();
 
-	$("#mysensor-form").modal("show");
+	$("#mysensor-form").show();
 }
 
 function onClickSensor(row) {
@@ -90,16 +91,20 @@ function listDevices() {
 function init() {
 	$( "#sensorsList" ).hide();
 	
-	$( "#sensor-form" ).modal("hide");
-	$( "#mysensor-form" ).modal("hide");
+	$( "#sensor-form" ).hide();
+	$( "#mysensor-form" ).hide();
 	$( "#error_msg" ).hide();
 
 	$("#node_list").empty();
 
-	Homey.emit('initPair', function(deviceArr, extraArr) {
+	Homey.emit('initPair', false, function(err, data) {
+		var deviceArr = data.deviceArr;
+		var extraArr = data.extraArr;
+
 	 	$("#node_list").empty();
 		if(deviceArr !== undefined) {
 			if(deviceArr.length == 0) {
+				console.log(deviceArr.length)
 				$("#node_list").text( __("pair.noNodes") );
 			} else {
 				$.each(extraArr.homey_capabilities, function(key, value) {
@@ -150,7 +155,7 @@ function addNode() {
 		    			$("#nodeAlert").text( result);
 			    		Homey.emit( 'addedDevicePair', node_device, function(err) {
 			    			init();
-			    			$( "#mysensor-form" ).modal("hide");
+			    			$( "#mysensor-form" ).hide();
 			    		});
 			    	}
 				});
@@ -212,7 +217,7 @@ function selectSensor(sensor) {
 		$( "#sensor_capability" ).val('');
 	}
 
-	$( "#sensor-form" ).modal("show");
+	$( "#sensor-form" ).show();
 	$( "#sensorIDAlert" ).hide();
 }
 
@@ -236,7 +241,7 @@ function saveSensor() {
 
 		listSensors(selectedNode);
 
-		$( "#sensor-form" ).modal("hide");
+		$( "#sensor-form" ).hide();
 	}
 }
 
@@ -246,11 +251,11 @@ function removeSensor() {
 		selectedNode.sensors[sensorId] = null;
 	}
 	listSensors(selectedNode);
-	$( "#sensor-form" ).modal("hide");
+	$( "#sensor-form" ).hide();
 }
 
 function closeSensor() {
-	$( "#sensor-form" ).modal("hide");
+	$( "#sensor-form" ).hide();
 }
 
 function selectSensorCapability() {
@@ -282,7 +287,7 @@ $('#sensorId').on('change keyup', function() {
 	}
 });
 
-$( "#mysensor-form" ).modal("hide");
+$( "#mysensor-form" ).hide();
 $( "#error_msg" ).hide();
 $( "#sensorIDAlert" ).hide();
 init();

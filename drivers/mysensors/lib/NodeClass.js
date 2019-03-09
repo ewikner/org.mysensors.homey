@@ -1,4 +1,6 @@
 'use strict';
+
+const Homey = require('homey');
 const events = require('events');
 const fileExists = require('file-exists');
 var deviceClasses = require('./deviceclasses.json');
@@ -53,6 +55,7 @@ class Node extends events.EventEmitter {
 		this.batteryLevel = this.parseBatteryLevel(value);
 		if (this.showBatteryLevel) {
 			this.triggerNodeSensorRealtimeUpdate("measure_battery.255", this.batteryLevel);
+			this.triggerNodeSensorRealtimeUpdate("measure_battery", this.batteryLevel);
 		}
 	}
 
@@ -215,6 +218,7 @@ class Node extends events.EventEmitter {
 		sensor.on('sensorTriggerValue', (eventName, sensor, value) => {
 			if(this.isAdded) {
 				var node_device_data = this.getDeviceDataObject();
+				//console.log('do trigger');
 				this.emit('nodeSensorTriggerValue', eventName, sensor, node_device_data, value);
 			}
 		})
@@ -235,6 +239,7 @@ class Node extends events.EventEmitter {
 	}
 
 	triggerNodeSensorRealtimeUpdate(capability, payload) {
+		//console.log('trigger update');
 		var node_device_data = this.getDeviceDataObject();
 		this.emit('nodeSensorRealtimeUpdate', node_device_data, capability, payload);
 	}
@@ -283,7 +288,7 @@ class Node extends events.EventEmitter {
 		}
 
 		if (this.showBatteryLevel) {
-			sensorCapabilities.push("measure_battery.255");
+			sensorCapabilities.push("measure_battery");
 		}
 		if (this.showLastSeen) {
 			sensorCapabilities.push("mysensors_lastseen.255");
@@ -291,14 +296,14 @@ class Node extends events.EventEmitter {
 
 		var capabilitiesArr = sensorCapabilities;
 
-		var mobileObj = {
-			components: [
-				{
-					id: "icon",
-					capabilities: []
-				}
-			]
-		}
+		// var mobileObj = {
+		// 	components: [
+		// 		{
+		// 			id: "icon",
+		// 			capabilities: []
+		// 		}
+		// 	]
+		// }
 
 		// number, boolean or string
 		var sensorObj = {};
@@ -361,7 +366,7 @@ class Node extends events.EventEmitter {
 			        	toggleObj.options.icons[capability] = iconPath;
 			        }
 					toggleObj.capabilities.push(capability);
-					mobileObj.components.push(toggleObj);
+					//mobileObj.components.push(toggleObj);
 	        		break;
 	        	case 'dim':
 		        	if(iconPath != null) {
@@ -411,28 +416,28 @@ class Node extends events.EventEmitter {
 
 		}
 
-		if(batteryObj.capabilities.length > 0) {
-			mobileObj.components.push(batteryObj);
-		}
-		if(sensorObj.capabilities.length > 0) {
-			mobileObj.components.push(sensorObj);
-		}
-		if(sliderObj.capabilities.length > 0) {
-			mobileObj.components.push(sliderObj);
-		}
-		if(colorObj.capabilities.length > 0) {
-			mobileObj.components.push(colorObj);
-		}
-		if(thermostatObj.capabilities.length > 0) {
-			mobileObj.components.push(thermostatObj);
-		}
-		if(pickerObj.capabilities.length > 0) {
-			mobileObj.components.push(pickerObj);
-		}
+		// if(batteryObj.capabilities.length > 0) {
+		// 	mobileObj.components.push(batteryObj);
+		// }
+		// if(sensorObj.capabilities.length > 0) {
+		// 	mobileObj.components.push(sensorObj);
+		// }
+		// if(sliderObj.capabilities.length > 0) {
+		// 	mobileObj.components.push(sliderObj);
+		// }
+		// if(colorObj.capabilities.length > 0) {
+		// 	mobileObj.components.push(colorObj);
+		// }
+		// if(thermostatObj.capabilities.length > 0) {
+		// 	mobileObj.components.push(thermostatObj);
+		// }
+		// if(pickerObj.capabilities.length > 0) {
+		// 	mobileObj.components.push(pickerObj);
+		// }
 
 		var returnObj = {}
 		returnObj.capabilities = capabilitiesArr;
-		returnObj.mobile = mobileObj;
+		//returnObj.mobile = mobileObj;
 		returnObj.capabilitiesOptions = capabilitiesOptions;
 		return returnObj;
 	}
@@ -507,9 +512,11 @@ class Node extends events.EventEmitter {
 			name: this.name,
 			class: this.getSensorClasses(),
 			capabilities: sensor_device_object.capabilities,
-			capabilitiesOptions: sensor_device_object.capabilitiesOptions,
-			mobile: sensor_device_object.mobile
+			capabilitiesOptions: sensor_device_object.capabilitiesOptions
+			// mobile: sensor_device_object.mobile depreciaded in Hmey V2
 		};
+
+		console.log(node_device);
 
 		return node_device;
 	}

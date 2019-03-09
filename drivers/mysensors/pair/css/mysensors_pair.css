@@ -17,10 +17,3 @@
 .checkbox_label {
     padding-left: 10px;
 }
-/* Important part */
-.modal-dialog{
-    overflow-y: initial !important
-}
-.modal-body{
-    overflow-y: auto;
-}

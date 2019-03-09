@@ -1,7 +1,8 @@
 {
     "id": "org.mysensors.homey",
-    "version": "0.2.3",
-    "compatibility": ">=1.3.1",
+    "sdk": 2,
+    "version": "0.3.8",
+    "compatibility": ">=2.0.0",
     "name": {
         "en": "Mysensors.org"
     },
@@ -22,6 +23,10 @@
             {
                 "name" : "Terry Hendrix",
                 "email": "terryhendrix90@gmail.com"
+            },
+            {
+                "name" : "Marcel Timmermans",
+                "email": "marcel@timmermans.us"
             }
         ]
     },
@@ -36,7 +41,9 @@
                 "en": "Last Seen"
             },
             "getable": true,
-            "setable": true
+            "setable": true,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_lastseen.svg"
         },
         "mysensors_custom": {
             "type": "string",
@@ -44,7 +51,10 @@
                 "en": "Mysensor custom"
             },
             "getable": true,
-            "setable": true
+            "setable": true,
+            "insights": true,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_custom.svg"
         },
         "mysensors_number": {
             "type": "number",
@@ -53,15 +63,23 @@
             },
             "decimals": 2,
             "getable": true,
-            "setable": true
+            "setable": true,
+            "insights": true,
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_number.svg"
         },
         "mysensors_boolean": {
             "type": "boolean",
             "title": {
                 "en": "Mysensor boolean"
             },
+            "insightsTitleTrue": { "en": "On" },
+            "insightsTitleFalse": { "en": "Off" },
             "getable": true,
-            "setable": true
+            "setable": true,
+            "insights": true,
+            "uiComponent": "toggle",
+            "icon": "/assets/icons/mysensors_boolean.svg"
         },
         "mysensors_boolean_get": {
             "type": "boolean",
@@ -69,18 +87,29 @@
                 "en": "Mysensor boolean get"
             },
             "getable": true,
-            "setable": false
+            "setable": false,
+            "insights": true,
+            "insightsTitleTrue": { "en": "On" },
+            "insightsTitleFalse": { "en": "Off" },
+            "uiComponent": "sensor",
+            "icon": "/assets/icons/mysensors_boolean_get.svg"
         },
         "mysensors_boolean_set": {
             "type": "boolean",
+            "uiComponent" : "button",
             "title": {
                 "en": "Mysensor boolean set"
             },
             "getable": false,
-            "setable": true
+            "setable": true,
+            "insights": true,
+            "insightsTitleTrue": { "en": "On" },
+            "insightsTitleFalse": { "en": "Off" },
+            "icon": "/assets/icons/mysensors_boolean_set.svg"
         },
         "mysensors_water_flow_hour": {
             "type": "number",
+            "uiComponent": "sensor",
             "title": {
                 "en": "Water flow per hour",
                 "nl": "Watergebruik per uur"
@@ -95,10 +124,13 @@
             "chartType": "stepLine",
             "decimals": 2,
             "getable": true,
-            "setable": false
+            "setable": false,
+            "insights": true,
+            "icon": "/assets/icons/mysensors_water_flow.svg"
         },
         "mysensors_water_flow_min": {
             "type": "number",
+            "uiComponent": "sensor",
             "title": {
                 "en": "Water flow per minute",
                 "nl": "Watergebruik per minuut"
@@ -113,7 +145,9 @@
             "chartType": "stepLine",
             "decimals": 2,
             "getable": true,
-            "setable": false
+            "setable": false,
+            "insights": true,
+            "icon": "/assets/icons/mysensors_water_flow.svg"
         }
     },
     "drivers": [
@@ -126,7 +160,7 @@
                 "large": "./drivers/mysensors/assets/images/large.png",
                 "small": "./drivers/mysensors/assets/images/small.png"
             },
-            "class": "",
+            "class": "socket",
             "capabilities": [],
             "pair": [
                 {
@@ -150,9 +184,12 @@
                     },
                     {
                         "name": "sensorId",
-                        "type": "autocomplete"
+                        "type": "autocomplete",
+                        "placeholder": {
+							"en": "Trigger",
+							"nl": "Trigger"
+						}
                     }
-
                 ]
             },
             {
@@ -186,6 +223,26 @@
                     {
                         "name": "sensorId",
                         "type": "autocomplete"
+                    }
+                ]
+            },            {
+                "id": "value_updated",
+                "title": {
+                    "en": "Value has updated"
+                },
+                "args": [
+                    {
+                        "name": "device",
+                        "type": "device",
+                        "filter": "driver_id=mysensors"
+                    },
+                    {
+                        "name": "sensorId",
+                        "type": "autocomplete",
+                        "placeholder": {
+							"en": "Trigger",
+							"nl": "Trigger"
+						}
                     }
                 ]
             }
@@ -235,13 +292,13 @@
                         "type": "dropdown",
                         "values": [
                             {
-                                "id": true,
+                                "id": "true",
                                 "label": {
                                         "en": "On"
                                 }
                             },
                             {
-                                "id": false,
+                                "id": "false",
                                 "label": {
                                         "en": "Off"
                                 }
@@ -266,15 +323,6 @@
                     {
                         "name": "sensorId",
                         "type": "autocomplete"
-                    },
-                    {
-                        "name": "value",
-                        "type": "text",
-                        "placeholder": [
-                            {
-                                "en": "Value"
-                            }
-                        ]
                     }
                 ]
             },
@@ -320,17 +368,17 @@
                         "type": "autocomplete"
                     },
                     {
-                        "name": "value",
+                        "name": "value_is",
                         "type": "dropdown",
                         "values": [
                             {
-                                "id": 1,
+                                "id": "true",
                                 "label": {
                                         "en": "On"
                                 }
                             },
                             {
-                                "id": 0,
+                                "id": "false",
                                 "label": {
                                         "en": "Off"
                                 }

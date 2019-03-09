@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
-    <script type="text/javascript" src="/manager/webserver/assets/js/angular.js"></script>
-    <script type="text/javascript" src="js/ui-grid.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/manager/webserver/assets/font/fontawesome/fontawesome.css">
     <link rel="stylesheet" type="text/css" href="css/ui-grid.min.css" />
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/mysensors_settings.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/mysensors_settings.css">     
+    <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/manager/webserver/assets/js/angular.js"></script>
+    <script type="text/javascript" src="js/ui-grid.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/mysensors_settings.js"></script> 
   </head>
 <body>
@@ -19,6 +20,7 @@
   <ul class="nav nav-pills">
     <li class="active"><a data-toggle="pill" href="#setting">Settings</a></li>
     <li><a data-toggle="pill" href="#messageLog">messageLog</a></li>
+    <li><a data-toggle="pill" href="#AppLog">App Log</a></li>
   </ul>
 
   <div class="tab-content">
@@ -140,6 +142,11 @@
       <div ng-controller="messageLogCtrl">
         <div id="messageLogGrid" ui-grid="gridOptions" class="messageLogGrid"></div>
       </div>
+    </div>
+    <div id="AppLog" class="tab-pane fade">
+        <button type="button" id="button_deletelog" onclick="deleteLogs()" data-i18n="settings.deletelogs">Delete Logs</button>
+        <button type="button" id="button_getlog" onclick="showLogs()" data-i18n="settings.getlogs">Get Logs</button>
+        <div id="loglines"></div>
     </div>
   </div>
   </div>
