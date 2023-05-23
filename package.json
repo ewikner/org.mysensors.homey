@@ -6,7 +6,7 @@
   "dependencies": {
     "file-exists": "^5.0.1",
     "fixture-stdout": "^0.2.1",
-    "mqtt": "^2.18.8",
+    "mqtt": "^4.3.7",
     "net": "^1.0.2"
   },
   "devDependencies": {},
